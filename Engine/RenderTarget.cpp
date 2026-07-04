@@ -15,7 +15,7 @@ RenderTarget::~RenderTarget()
 
 void RenderTarget::ClearRenderTargetView()
 {
-	Color clearColor = Color(0.0f, 0.0f, 0.0f, 1.0f);
+	Color clearColor = Color(0.0f, 0.0f, 0.0f, 1000.0f);
 	DC->ClearRenderTargetView(_renderTargetView.Get(), (float*)(&clearColor));
 }
 

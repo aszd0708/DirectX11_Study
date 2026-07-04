@@ -118,7 +118,7 @@ void SSAODemo::Update()
 
 void SSAODemo::Render()
 {
-	_renderTarget->ClearRenderTargetView();
+	_renderTarget->ClearRenderTargetView();	
 
 	DC->OMSetRenderTargets(1, _renderTarget->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
 
