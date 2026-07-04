@@ -1,0 +1,15 @@
+#pragma once
+#include "BaseCollider.h"
+class OBBBoxCollider : public BaseCollider
+{
+public:
+	OBBBoxCollider();
+	virtual ~OBBBoxCollider();
+	virtual void Update() override;
+	virtual bool Intersects(Ray& ray, OUT float& distance) override;
+	BoundingOrientedBox& GetBoundingOrientedBox() { return _boundingOrientedBox; }
+
+private:
+	BoundingOrientedBox _boundingOrientedBox;
+};
+
