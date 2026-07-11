@@ -7,6 +7,7 @@ public:
 	virtual ~OBBBoxCollider();
 	virtual void Update() override;
 	virtual bool Intersects(Ray& ray, OUT float& distance) override;
+	virtual bool Intersects(shared_ptr<BaseCollider>& other) override;
 	BoundingOrientedBox& GetBoundingOrientedBox() { return _boundingOrientedBox; }
 
 private:

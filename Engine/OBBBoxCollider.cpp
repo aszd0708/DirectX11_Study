@@ -23,3 +23,8 @@ bool OBBBoxCollider::Intersects(Ray & ray, OUT float& distance)
 {
 	return _boundingOrientedBox.Intersects(ray.position, ray.direction, OUT distance);
 }
+
+bool OBBBoxCollider::Intersects(shared_ptr<BaseCollider>& other)
+{
+	return false;
+}

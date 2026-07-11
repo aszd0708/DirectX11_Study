@@ -34,6 +34,12 @@
     <Filter Include="Shaders\Demo">
       <UniqueIdentifier>{0388eed7-b764-4e8c-8180-5cdfbf4c1016}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\GameObject">
+      <UniqueIdentifier>{db3bb5c8-6a3b-4725-b377-41b02b788477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Material">
+      <UniqueIdentifier>{5c587bd2-cf25-4c85-a30d-11f6cf1a513c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -66,6 +72,15 @@
     <ClCompile Include="SSAODemo.cpp">
       <Filter>Game\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="07. HeightMapDemo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderObject.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -97,6 +112,15 @@
     </ClInclude>
     <ClInclude Include="SSAODemo.h">
       <Filter>Game\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="07. HeightMapDemo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderObject.h">
+      <Filter>Game\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +215,15 @@
       <Filter>Shaders\Week4</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\SSAODemo.fx">
+      <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\TerrainForDemo.fx">
+      <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\DefaultMeshForDemo.fx">
+      <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
   </ItemGroup>

@@ -25,7 +25,7 @@ void Scene::Update()
 	// INSTANCING
 	vector<shared_ptr<GameObject>> temp;
 	temp.insert(temp.end(), objects.begin(), objects.end());
-	INSTANCING->Render(temp);
+	//INSTANCING->Render(temp);
 }
 
 void Scene::LateUpdate()

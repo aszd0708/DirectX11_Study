@@ -36,7 +36,6 @@ void AssimpTool::Init()
 		converter->ExportAnimationData(L"Kachujin/Slash");
 	}
 
-	*/
 
 	{
 		shared_ptr<Converter> converter = make_shared<Converter>();
@@ -44,6 +43,15 @@ void AssimpTool::Init()
 		converter->ReadAssetFile(L"StanfordBunny/stanford-bunny.fbx");
 		converter->ExportMaterialData(L"StanfordBunny/StanfordBunny");
 		converter->ExportModelData(L"StanfordBunny/StanfordBunny");
+	}
+	*/
+
+	{
+		shared_ptr<Converter> converter = make_shared<Converter>();
+
+		converter->ReadAssetFile(L"Wall/Wall.obj");
+		converter->ExportMaterialData(L"Wall/Wall");
+		converter->ExportModelData(L"Wall/Wall");
 	}
 }
 

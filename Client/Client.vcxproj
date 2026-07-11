@@ -19,18 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="07. HeightMapDemo.h" />
     <ClInclude Include="CameraScript.h" />
     <ClInclude Include="GroupDemo.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RawBufferDemo.h" />
+    <ClInclude Include="RenderObject.h" />
     <ClInclude Include="SceneDemo.h" />
     <ClInclude Include="SSAODemo.h" />
     <ClInclude Include="StructuredBufferDemo.h" />
+    <ClInclude Include="Terrain.h" />
     <ClInclude Include="TextureBufferDemo.h" />
     <ClInclude Include="ViewportDemo.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="07. HeightMapDemo.cpp" />
     <ClCompile Include="CameraScript.cpp" />
     <ClCompile Include="GroupDemo.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -38,9 +42,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="RawBufferDemo.cpp" />
+    <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="SceneDemo.cpp" />
     <ClCompile Include="SSAODemo.cpp" />
     <ClCompile Include="StructuredBufferDemo.cpp" />
+    <ClCompile Include="Terrain.cpp" />
     <ClCompile Include="TextureBufferDemo.cpp" />
     <ClCompile Include="ViewportDemo.cpp" />
   </ItemGroup>
@@ -84,7 +90,10 @@
     <FxCompile Include="..\Shaders\25. GroupDemo.fx" />
     <FxCompile Include="..\Shaders\26. TextureBufferDemo.fx" />
     <FxCompile Include="..\Shaders\27. StructuredBufferDemo.fx" />
+    <FxCompile Include="..\Shaders\DefaultMeshForDemo.fx" />
+    <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx" />
     <FxCompile Include="..\Shaders\SSAODemo.fx" />
+    <FxCompile Include="..\Shaders\TerrainForDemo.fx" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
