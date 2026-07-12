@@ -34,7 +34,6 @@ void RenderTarget::CreateRenderTarget(float width, float height)
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
-
 	DEVICE->CreateTexture2D(&desc, nullptr, _renderTarget.GetAddressOf());
 }
 

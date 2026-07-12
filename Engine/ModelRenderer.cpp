@@ -25,19 +25,38 @@ void ModelRenderer::SetModel(shared_ptr<Model> model)
 	}
 }
 
-void ModelRenderer::Render()
+void ModelRenderer::Render(shared_ptr<Shader> customShader)
 {
 	if (_model == nullptr)
 		return;
 
-	// Global Data
-	_shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	shared_ptr<Shader> activateShader = nullptr;
+	if (customShader != nullptr)
+	{
+		activateShader = customShader;
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+		else
+		{
+			activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+		}
+	}
+	else
+	{
+		activateShader = _shader;
+
+		// Global Data
+		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	}
 
 	// Light
 	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
 	if (lightObj != nullptr)
 	{
-		_shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
 	}
 
 	// Bones
@@ -49,11 +68,11 @@ void ModelRenderer::Render()
 		shared_ptr<ModelBone> bone = _model->GetBoneByIndex(i);
 		boneDesc.transforms[i] = bone->transform;
 	}
-	_shader->PushBoneData(boneDesc);
+	activateShader->PushBoneData(boneDesc);
 
 	// Transform
 	auto world = GetTransform()->GetWorldMatrix();
-	_shader->PushTransformData(TransformDesc{ world });
+	activateShader->PushTransformData(TransformDesc{ world });
 
 	const auto& meshes = _model->GetMeshes();
 	for (auto& mesh : meshes)
@@ -64,46 +83,44 @@ void ModelRenderer::Render()
 		}
 
 		// BoneIndex
-		_shader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
+		activateShader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
 
 		// IA
 		mesh->vertexBuffer->PushData();
 		mesh->indexBuffer->PushData();
 
-		_shader->DrawIndexed(0, _pass, mesh->indexBuffer->GetCount());
+		activateShader->DrawIndexed(0, _pass, mesh->indexBuffer->GetCount());
 	}
 }
 
-void ModelRenderer::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer)
+void ModelRenderer::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer, shared_ptr<Shader> customShader)
 {
 	if (_model == nullptr)
 		return;
 
-	// Global Data
-	_shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	shared_ptr<Shader> activateShader = (customShader != nullptr) ? customShader : _shader;
 
-	// Light
-	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
-	if (lightObj != nullptr)
+	if (customShader == nullptr)
 	{
-		_shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
 	}
-
 	// Bones
 	BoneDesc boneDesc;
 	const uint32 boneCount = _model->GetBoneCount();
-
 	for (uint32 i = 0; i < boneCount; ++i)
 	{
 		shared_ptr<ModelBone> bone = _model->GetBoneByIndex(i);
 		boneDesc.transforms[i] = bone->transform;
 	}
-	_shader->PushBoneData(boneDesc);
-
+	activateShader->PushBoneData(boneDesc);
 	// Transform
 	auto world = GetTransform()->GetWorldMatrix();
-	_shader->PushTransformData(TransformDesc{ world });
-
+	activateShader->PushTransformData(TransformDesc{ world });
 	const auto& meshes = _model->GetMeshes();
 	for (auto& mesh : meshes)
 	{
@@ -111,17 +128,13 @@ void ModelRenderer::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer)
 		{
 			mesh->material->Update();
 		}
-
 		// BoneIndex
-		_shader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
-
+		activateShader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
 		// IA
 		mesh->vertexBuffer->PushData();
 		mesh->indexBuffer->PushData();
-
 		buffer->PushData();
-
-		_shader->DrawIndexedInstanced(0, _pass, mesh->indexBuffer->GetCount(), buffer->GetCount());
+		activateShader->DrawIndexedInstanced(0, _pass, mesh->indexBuffer->GetCount(), buffer->GetCount());
 	}
 }
 

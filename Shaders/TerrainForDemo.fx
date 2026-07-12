@@ -1,17 +1,19 @@
 #include "00. Global.fx"
+#include "00. Light.fx"
 
-matrix World;
-matrix View;
-matrix Projection;
 Texture2D Texture0;
 
-VertexOutput VS(VertexTexture input)
+MeshOutput VS(VertexTexture input)
 {
-	VertexOutput output;
+    MeshOutput output;
     output.position = mul(input.position, W);
+    output.worldPosition = output.position;
     output.position = mul(output.position, VP);
 	
     output.uv = input.uv;
+    
+    output.normal = float3(0.0f, 1.0f, 0.0f);
+    output.tangent = float3(1.0f, 0.0f, 0.0f);
 
 	return output;
 }
@@ -25,9 +27,12 @@ SamplerState Sampler0
     AddressV = Wrap;
 };
 
-float4 PS(VertexOutput input) : SV_TARGET
-{
-    return Texture0.Sample(Sampler0, input.uv);
+float4 PS(MeshOutput input) : SV_TARGET
+{    
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    
+    float4 color = Texture0.Sample(Sampler0, input.uv);
+    return float4(color.rgb * shadow, 1.0f);
 }
 
 technique11 T0

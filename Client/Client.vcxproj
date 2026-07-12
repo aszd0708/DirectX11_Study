@@ -27,6 +27,7 @@
     <ClInclude Include="RawBufferDemo.h" />
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="SceneDemo.h" />
+    <ClInclude Include="ShadowDemo.h" />
     <ClInclude Include="SSAODemo.h" />
     <ClInclude Include="StructuredBufferDemo.h" />
     <ClInclude Include="Terrain.h" />
@@ -44,6 +45,7 @@
     <ClCompile Include="RawBufferDemo.cpp" />
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="SceneDemo.cpp" />
+    <ClCompile Include="ShadowDemo.cpp" />
     <ClCompile Include="SSAODemo.cpp" />
     <ClCompile Include="StructuredBufferDemo.cpp" />
     <ClCompile Include="Terrain.cpp" />
@@ -92,6 +94,7 @@
     <FxCompile Include="..\Shaders\27. StructuredBufferDemo.fx" />
     <FxCompile Include="..\Shaders\DefaultMeshForDemo.fx" />
     <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx" />
+    <FxCompile Include="..\Shaders\ShadowMapDemo.fx" />
     <FxCompile Include="..\Shaders\SSAODemo.fx" />
     <FxCompile Include="..\Shaders\TerrainForDemo.fx" />
   </ItemGroup>

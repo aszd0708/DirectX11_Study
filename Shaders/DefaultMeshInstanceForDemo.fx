@@ -26,8 +26,10 @@ SSAOMeshInstanceOutput VS(VS_IN input)
 {
     SSAOMeshInstanceOutput output;
     
-    output.position = mul(input.position, input.world);
-    output.worldPosition = output.position.xyz;
+    float4 worldPos = mul(input.position, input.world);
+    output.position = worldPos;
+    output.worldPosition = worldPos;
+    
     output.position = mul(output.position, VP);
     
     output.uv = input.uv;
@@ -46,12 +48,16 @@ SSAOMeshInstanceOutput VS(VS_IN input)
 float4 PS(SSAOMeshInstanceOutput input) : SV_TARGET
 {
     float3 normal = normalize(input.normal);
-    float value = dot(-GlobalLight.direction, normal);
+    float value = saturate(dot(-GlobalLight.direction, normal));
     float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
-    return float4(color.rgb, input.linearDepth);
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    //return float4(value, value, value, input.linearDepth);
+    return float4(color.rgb * shadow * value, input.linearDepth);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
+    PASS_VP(P1, VS, PS)
+    PASS_VP(P2, VS, PS)
 };

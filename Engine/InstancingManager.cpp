@@ -5,13 +5,13 @@
 #include "ModelRenderer.h"
 #include "ModelAnimator.h"
 
-void InstancingManager::Render(vector<shared_ptr<GameObject>>& gameObjects)
+void InstancingManager::Render(vector<shared_ptr<GameObject>>& gameObjects, shared_ptr<Shader> customShader)
 {
 	ClearData();
 
-	RenderMeshRenderer(gameObjects);
-	RenderModelRenderer(gameObjects);
-	RenderAnimRenderer(gameObjects);
+	RenderMeshRenderer(gameObjects, customShader);
+	RenderModelRenderer(gameObjects, customShader);
+	RenderAnimRenderer(gameObjects, customShader);
 }
 
 void InstancingManager::ClearData()
@@ -23,7 +23,7 @@ void InstancingManager::ClearData()
 	}
 }
 
-void InstancingManager::RenderMeshRenderer(vector<shared_ptr<GameObject>>& gameObjects)
+void InstancingManager::RenderMeshRenderer(vector<shared_ptr<GameObject>>& gameObjects, shared_ptr<Shader> customShader)
 {
 	map<InstanceID, vector<shared_ptr<GameObject>>> cache;
 
@@ -66,7 +66,7 @@ void InstancingManager::RenderMeshRenderer(vector<shared_ptr<GameObject>>& gameO
 	}
 }
 
-void InstancingManager::RenderModelRenderer(vector<shared_ptr<GameObject>>& gameObjects)
+void InstancingManager::RenderModelRenderer(vector<shared_ptr<GameObject>>& gameObjects, shared_ptr<Shader> customShader)
 {
 	map<InstanceID, vector<shared_ptr<GameObject>>> cache;
 
@@ -105,12 +105,12 @@ void InstancingManager::RenderModelRenderer(vector<shared_ptr<GameObject>>& game
 
 			// 마지막 그림.
 			shared_ptr<InstancingBuffer>& buffer = _buffers[instanceId];
-			vec[0]->GetModelRenderer()->RenderInstancing(buffer);
+			vec[0]->GetModelRenderer()->RenderInstancing(buffer, customShader);
 		}
 	}
 }
 
-void InstancingManager::RenderAnimRenderer(vector<shared_ptr<GameObject>>& gameObjects)
+void InstancingManager::RenderAnimRenderer(vector<shared_ptr<GameObject>>& gameObjects, shared_ptr<Shader> customShader)
 {
 	map<InstanceID, vector<shared_ptr<GameObject>>> cache;
 

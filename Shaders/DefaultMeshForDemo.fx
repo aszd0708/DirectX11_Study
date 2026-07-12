@@ -13,7 +13,7 @@ uint BoneIndex;
 struct SSAOMeshOutput
 {
     float4 position : SV_POSITION;
-    float3 worldPosition : POSITION1;
+    float4 worldPosition : POSITION1;
     float2 uv : TEXCOORD;
     float3 normal : NORMAL;
     float3 tangent : TANGENT;
@@ -25,7 +25,7 @@ SSAOMeshOutput VS(VertexTextureNormalTangent input)
     SSAOMeshOutput output;
     
     output.position = mul(input.position, W);
-    output.worldPosition = output.position.xyz;
+    output.worldPosition = output.position;
     output.position = mul(output.position, VP);
     
     output.uv = input.uv;
@@ -44,12 +44,17 @@ SSAOMeshOutput VS(VertexTextureNormalTangent input)
 float4 PS(SSAOMeshOutput input) : SV_TARGET
 {
     float3 normal = normalize(input.normal);
-    float value = dot(-GlobalLight.direction, normal);
+    float value = saturate(dot(-GlobalLight.direction, normal)); // saturate로 0~1 범위 제한
     float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
-    return float4(color.rgb, input.linearDepth);
+    float shadow = CalculateShadow(input.worldPosition);
+    
+    //return float4(shadow, shadow, shadow, input.linearDepth);
+    
+    return float4(color.rgb * value * shadow, input.linearDepth);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
+    PASS_VP(P1, VS, PS)
 };

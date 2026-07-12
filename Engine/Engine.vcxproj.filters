@@ -237,6 +237,9 @@
     <ClInclude Include="RenderTargetGroup.h">
       <Filter>01. Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>01. Graphics</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -417,6 +420,9 @@
       <Filter>01. Graphics</Filter>
     </ClCompile>
     <ClCompile Include="RenderTargetGroup.cpp">
+      <Filter>01. Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
       <Filter>01. Graphics</Filter>
     </ClCompile>
   </ItemGroup>

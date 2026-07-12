@@ -79,6 +79,9 @@ using namespace Microsoft::WRL;
 #include "Shader.h"
 #include "IExecute.h"
 
+// RenderTarget
+#include "RenderTarget.h"
+#include "ShadowMap.h"
 
 #include "MonoBehaviour.h"
 #include "GameObject.h"

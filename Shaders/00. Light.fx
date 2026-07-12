@@ -47,6 +47,12 @@ Texture2D DiffuseMap;
 Texture2D SpecularMap;
 Texture2D NormalMap;
 
+////////////
+// SHADOW //
+////////////
+Texture2D ShadowMap;
+Matrix LightViewProjection;
+
 //////////////
 // Function //
 //////////////
@@ -121,6 +127,29 @@ void ComputeNormalMapping(inout float3 normal, float3 tangent, float2 uv)
     float3 worldNormal = mul(tangentSpaceNormal, TBN);
 
     normal = worldNormal;
+}
+
+float CalculateShadow(float4 worldPos)
+{
+    float4 lightSpacePos = mul(worldPos, LightViewProjection);
+    float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+    
+    projCoords.x = projCoords.x * 0.5f + 0.5f;
+    projCoords.y = -projCoords.y * 0.5f + 0.5f;
+    
+    if (projCoords.x < 0.0f || projCoords.x > 1.0f ||
+        projCoords.y < 0.0f || projCoords.y > 1.0f ||
+        projCoords.z < 0.0f || projCoords.z > 1.0f)
+    {
+        return 1.0f;
+    }
+    
+    float closestDepth = ShadowMap.Sample(PointSampler, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float bias = 0.001f;
+    
+    float shadow = (currentDepth - bias > closestDepth) ? 0.1f : 1.0f;
+    return shadow;
 }
 
 #endif

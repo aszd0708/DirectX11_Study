@@ -6,10 +6,14 @@ public:
 	virtual ~Terrain() override;
 
 public:
-	void Render();
+	void Render(shared_ptr<Shader> customShader = nullptr);
 
 private:
 	void Init();
+
+public:
+	shared_ptr<Shader> GetShader() { return _shader; }
+	void SetPass(int32 pass) { _pass = pass; }
 
 private:
 	shared_ptr<Shader> _shader;
@@ -18,5 +22,7 @@ private:
 	shared_ptr<Geometry<VertexTextureData>> _geometry;
 	shared_ptr<VertexBuffer> _vertexBuffer;
 	shared_ptr<IndexBuffer> _indexBuffer;
+
+	int _pass = 0;
 };
 

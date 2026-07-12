@@ -81,6 +81,9 @@
     <ClCompile Include="RenderObject.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowDemo.cpp">
+      <Filter>Game\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -121,6 +124,9 @@
     </ClInclude>
     <ClInclude Include="RenderObject.h">
       <Filter>Game\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowDemo.h">
+      <Filter>Game\Demo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -224,6 +230,9 @@
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx">
+      <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\ShadowMapDemo.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
   </ItemGroup>

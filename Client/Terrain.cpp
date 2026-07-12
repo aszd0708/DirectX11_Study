@@ -4,6 +4,7 @@
 #include "GameObject.h"
 #include "Texture.h"
 #include "Camera.h"
+#include "Light.h"
 
 Terrain::Terrain(shared_ptr<Shader> shader, shared_ptr<Texture> texture, shared_ptr<Texture> heightMap)
 	: _shader(shader), _texture(texture), _heightMap(heightMap)
@@ -16,21 +17,40 @@ Terrain::~Terrain()
 
 }
 
-void Terrain::Render()
+void Terrain::Render(shared_ptr<Shader> customShader)
 {
+	shared_ptr<Shader> activateShader = nullptr;
+	if (customShader != nullptr)
+	{
+		activateShader = customShader;
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+		else
+		{
+			activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+		}
+	}
+	else
+	{
+		activateShader = _shader;
+	}
+
 	TransformDesc transformDesc;
 	transformDesc.W = GetTransform()->GetWorldMatrix();
-	_shader->PushTransformData(transformDesc);
-	_shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	activateShader->PushTransformData(transformDesc);
+	activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
 
-	_shader->GetSRV("Texture0")->SetResource(_texture->GetComPtr().Get());	
+	activateShader->GetSRV("Texture0")->SetResource(_texture->GetComPtr().Get());
 	
 	uint32 stride = _vertexBuffer->GetStride();
 	uint32 offset = _vertexBuffer->GetOffset();
 	DC->IASetVertexBuffers(0, 1, _vertexBuffer->GetComPtr().GetAddressOf(), &stride, &offset);
 	DC->IASetIndexBuffer(_indexBuffer->GetComPtr().Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	_shader->DrawIndexed(0, 0, _indexBuffer->GetCount(), 0, 0);
+	activateShader->DrawIndexed(0, _pass, _indexBuffer->GetCount(), 0, 0);
 }
 
 void Terrain::Init()
