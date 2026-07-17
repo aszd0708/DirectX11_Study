@@ -51,13 +51,17 @@ float4 PS(SSAOMeshInstanceOutput input) : SV_TARGET
     float value = saturate(dot(-GlobalLight.direction, normal));
     float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
     float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
-    //return float4(value, value, value, input.linearDepth);
     return float4(color.rgb * shadow * value, input.linearDepth);
+}
+
+float4 PS_OnlyShadow(SSAOMeshInstanceOutput input) : SV_TARGET
+{
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    return float4(shadow, shadow, shadow, input.linearDepth);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
-    PASS_VP(P1, VS, PS)
-    PASS_VP(P2, VS, PS)
+    PASS_VP(P1, VS, PS_OnlyShadow)
 };

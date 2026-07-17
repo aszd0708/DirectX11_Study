@@ -51,7 +51,10 @@ void ShadowDemo::Init()
 
 void ShadowDemo::CreateShadowMap()
 {
-	_shadowMap = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps = vector<shared_ptr<ShadowMap>>(eShadowMapType::MAX);
+	_shadowMaps[eShadowMapType::Near] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps[eShadowMapType::Middle] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps[eShadowMapType::Far] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 }
 
 Matrix ShadowDemo::GetLightView()
@@ -63,10 +66,10 @@ Matrix ShadowDemo::GetLightView()
 
 Matrix ShadowDemo::GetLightProj()
 {
-	float shadowWidth = 300.0f;
-	float shadowHeight = 300.0f;
+	float shadowWidth = 100.0f;
+	float shadowHeight = 100.0f;
 	float shadowNear = 0.1f;
-	float shadowFar = 300.0f;
+	float shadowFar = 100.0f;
 	return ::XMMatrixOrthographicLH(shadowWidth, shadowHeight, shadowNear, shadowFar);
 }
 
@@ -132,7 +135,7 @@ void ShadowDemo::CreateOtherModels()
 
 void ShadowDemo::Update()
 {
-	ImGui::SliderInt("Pass", &_pass, 0, 3);
+	ImGui::SliderInt("Pass", &_pass, 0, 1);
 
 	{
 		ImGui::DragFloat3("Position", (float*)(&_lightPosition), 0.1f, -100.f, 359.9f);
@@ -145,6 +148,11 @@ void ShadowDemo::Update()
 		LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
 		desc.direction = _lightDirection;
 		CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
+	}
+	{
+		ImGui::Begin("Shadow Debugger");
+		ImGui::Image((void*)_shadowMap->GetSRV().Get(), ImVec2(256, 256));
+		ImGui::End();
 	}
 }
 
@@ -166,14 +174,15 @@ void ShadowDemo::RenderShadow()
 	_shadowShader->PushGlobalData(GetLightView(), GetLightProj());
 
 	for (auto& obj : _towerObjs)
-		obj->GetModelRenderer()->SetPass(3);
+	{
+		obj->GetModelRenderer()->SetPass(1);
+	}
 
 	INSTANCING->Render(_towerObjs, _shadowShader);
 
-	for (auto& obj : _towerObjs)
-		obj->GetModelRenderer()->SetPass(0);
-
+	_rabbitObj->GetModelRenderer()->SetPass(0);
 	_rabbitObj->GetModelRenderer()->Render(_shadowShader);
+	_terrain->SetPass(0);
 	_terrain->Render(_shadowShader);
 	
 	ID3D11RenderTargetView* nullRTV = nullptr;
@@ -200,6 +209,9 @@ void ShadowDemo::RenderObjects()
 	terrainShader->GetSRV("ShadowMap")->SetResource(_shadowMap->GetSRV().Get());
 	terrainShader->GetMatrix("LightViewProjection")->SetMatrix((float*)&lightVP);
 
+
+	for (auto& obj : _towerObjs)
+		obj->GetModelRenderer()->SetPass(_pass);
 	INSTANCING->Render(_towerObjs);
 
 	_rabbitObj->GetModelRenderer()->SetPass(_pass);

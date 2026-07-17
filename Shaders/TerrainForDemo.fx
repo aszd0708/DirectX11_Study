@@ -35,10 +35,14 @@ float4 PS(MeshOutput input) : SV_TARGET
     return float4(color.rgb * shadow, 1.0f);
 }
 
+float4 PS_OnlyShadow(MeshOutput input) : SV_TARGET
+{
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    return float4(shadow, shadow, shadow, 1.0f);
+}
+
 technique11 T0
 {
     PASS_VP(P0, VS, PS) // 0번 패스: 오리지널
-    PASS_VP(P1, VS, PS) // 0번 패스: 오리지널
-    PASS_VP(P2, VS, PS) // 0번 패스: 오리지널
-    PASS_VP(P3, VS, PS) // 0번 패스: 오리지널
+    PASS_VP(P1, VS, PS_OnlyShadow) // 0번 패스: 오리지널
 };

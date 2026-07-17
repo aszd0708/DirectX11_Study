@@ -5,7 +5,15 @@ class Terrain;
 class ShadowDemo : public IExecute
 {
 private:
-	const int SHADOW_MAP_SIZE = 2024;
+	const int SHADOW_MAP_SIZE = 4096;
+public:
+	enum eShadowMapType
+	{
+		Near = 0,
+		Middle = 1,
+		Far = 2,
+		MAX
+	};
 
 public:
 	void Init() override;
@@ -32,7 +40,7 @@ private:
 
 private:
 	shared_ptr<Shader> _shadowShader;
-	shared_ptr<ShadowMap> _shadowMap;
+	vector<shared_ptr<ShadowMap>> _shadowMaps;
 	Vec3 _originCameraPosition;
 
 private:

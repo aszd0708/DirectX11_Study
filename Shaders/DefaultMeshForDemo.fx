@@ -44,17 +44,21 @@ SSAOMeshOutput VS(VertexTextureNormalTangent input)
 float4 PS(SSAOMeshOutput input) : SV_TARGET
 {
     float3 normal = normalize(input.normal);
-    float value = saturate(dot(-GlobalLight.direction, normal)); // saturate로 0~1 범위 제한
+    float value = saturate(dot(-GlobalLight.direction, normal)); 
     float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
     float shadow = CalculateShadow(input.worldPosition);
     
-    //return float4(shadow, shadow, shadow, input.linearDepth);
-    
     return float4(color.rgb * value * shadow, input.linearDepth);
+}
+
+float4 PS_OnlyShadow(SSAOMeshOutput input) : SV_TARGET
+{
+    float shadow = CalculateShadow(input.worldPosition);
+    return float4(shadow, shadow, shadow, input.linearDepth);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
-    PASS_VP(P1, VS, PS)
+    PASS_VP(P1, VS, PS_OnlyShadow)
 };

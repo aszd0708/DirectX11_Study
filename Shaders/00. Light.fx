@@ -129,6 +129,14 @@ void ComputeNormalMapping(inout float3 normal, float3 tangent, float2 uv)
     normal = worldNormal;
 }
 
+SamplerComparisonState ComparisonSampler
+{
+    Filter = COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    AddressU = Clamp;
+    AddressV = Clamp;
+    ComparisonFunc = LESS_EQUAL; // 내 깊이가 맵 깊이보다 작거나 같으면 통과
+};
+
 float CalculateShadow(float4 worldPos)
 {
     float4 lightSpacePos = mul(worldPos, LightViewProjection);
@@ -144,12 +152,21 @@ float CalculateShadow(float4 worldPos)
         return 1.0f;
     }
     
-    float closestDepth = ShadowMap.Sample(PointSampler, projCoords.xy).r;
     float currentDepth = projCoords.z;
-    float bias = 0.001f;
+    float bias = 0.0001f;
     
-    float shadow = (currentDepth - bias > closestDepth) ? 0.1f : 1.0f;
-    return shadow;
+    float shadowPercent = 0.0f;
+    float2 texelSize = 1.0f / 4096.0f;
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            shadowPercent += ShadowMap.SampleCmpLevelZero(ComparisonSampler, projCoords.xy + offset, projCoords.z - bias).r;
+        }
+    }
+    shadowPercent /= 9.0f;
+    return lerp(0.1f, 1.0f, shadowPercent);
 }
 
 #endif
