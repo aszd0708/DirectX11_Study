@@ -50,13 +50,36 @@ float4 PS(SSAOMeshInstanceOutput input) : SV_TARGET
     float3 normal = normalize(input.normal);
     float value = saturate(dot(-GlobalLight.direction, normal));
     float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    
+    float cameraDepth = input.position.w;
+    
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
+    
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
+    
     return float4(color.rgb * shadow * value, input.linearDepth);
 }
 
 float4 PS_OnlyShadow(SSAOMeshInstanceOutput input) : SV_TARGET
 {
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    float cameraDepth = input.position.w;
+    
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
+    
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
+    
     return float4(shadow, shadow, shadow, input.linearDepth);
 }
 

@@ -50,8 +50,13 @@ Texture2D NormalMap;
 ////////////
 // SHADOW //
 ////////////
-Texture2D ShadowMap;
-Matrix LightViewProjection;
+
+cbuffer ShadowBuffer
+{
+    Matrix LightVP[3];
+    float4 CascadeEnd;
+};
+Texture2DArray ShadowMapArray;
 
 //////////////
 // Function //
@@ -137,9 +142,9 @@ SamplerComparisonState ComparisonSampler
     ComparisonFunc = LESS_EQUAL; // 내 깊이가 맵 깊이보다 작거나 같으면 통과
 };
 
-float CalculateShadow(float4 worldPos)
+float CalculateShadow(float4 worldPos, int cascadeIndex, Matrix lightVP)
 {
-    float4 lightSpacePos = mul(worldPos, LightViewProjection);
+    float4 lightSpacePos = mul(worldPos, lightVP);
     float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
     
     projCoords.x = projCoords.x * 0.5f + 0.5f;
@@ -162,7 +167,9 @@ float CalculateShadow(float4 worldPos)
         for (int y = -1; y <= 1; ++y)
         {
             float2 offset = float2(x, y) * texelSize;
-            shadowPercent += ShadowMap.SampleCmpLevelZero(ComparisonSampler, projCoords.xy + offset, projCoords.z - bias).r;
+            shadowPercent += ShadowMapArray.SampleCmpLevelZero(ComparisonSampler, 
+            float3(projCoords.xy + offset, cascadeIndex), 
+            projCoords.z - bias).r;
         }
     }
     shadowPercent /= 9.0f;

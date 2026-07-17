@@ -2,18 +2,16 @@
 
 class Terrain;
 
+struct ShadowDesc
+{
+	Matrix lightVP[3];
+	Vec4 cascadeEnd;
+};
+
 class ShadowDemo : public IExecute
 {
 private:
 	const int SHADOW_MAP_SIZE = 4096;
-public:
-	enum eShadowMapType
-	{
-		Near = 0,
-		Middle = 1,
-		Far = 2,
-		MAX
-	};
 
 public:
 	void Init() override;
@@ -22,8 +20,8 @@ private:
 	void CreateShadowMap();
 
 	Matrix GetLightView();
-	Matrix GetLightProj();
-	Matrix GetLightVP();
+	Matrix GetLightProj(ShadowMap::eShadowMapType shadowMapType);
+	Matrix GetLightVP(ShadowMap::eShadowMapType shadowMapType);
 
 private:
 	void CreateTerrain();
@@ -40,7 +38,9 @@ private:
 
 private:
 	shared_ptr<Shader> _shadowShader;
-	vector<shared_ptr<ShadowMap>> _shadowMaps;
+	shared_ptr<ShadowMap> _shadowMaps;
+	shared_ptr<ConstantBuffer<ShadowDesc>> _shadowBuffer;
+
 	Vec3 _originCameraPosition;
 
 private:
@@ -56,6 +56,7 @@ private:
 
 private:
 	int _pass = 0;
+	int _lightMapTextureIndex = 0;
 
 	Vec3 _lightPosition;
 	Vec3 _lightDirection;

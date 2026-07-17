@@ -29,7 +29,17 @@ SamplerState Sampler0
 
 float4 PS(MeshOutput input) : SV_TARGET
 {    
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    float cameraDepth = input.position.w;
+    
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
+    
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
     
     float4 color = Texture0.Sample(Sampler0, input.uv);
     return float4(color.rgb * shadow, 1.0f);
@@ -37,7 +47,18 @@ float4 PS(MeshOutput input) : SV_TARGET
 
 float4 PS_OnlyShadow(MeshOutput input) : SV_TARGET
 {
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f));
+    float cameraDepth = input.position.w;
+    
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
+    
+    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
+    
     return float4(shadow, shadow, shadow, 1.0f);
 }
 

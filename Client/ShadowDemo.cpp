@@ -51,31 +51,55 @@ void ShadowDemo::Init()
 
 void ShadowDemo::CreateShadowMap()
 {
-	_shadowMaps = vector<shared_ptr<ShadowMap>>(eShadowMapType::MAX);
-	_shadowMaps[eShadowMapType::Near] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-	_shadowMaps[eShadowMapType::Middle] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-	_shadowMaps[eShadowMapType::Far] = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowBuffer = make_shared<ConstantBuffer<ShadowDesc>>();
+	_shadowBuffer->Create();
 }
 
 Matrix ShadowDemo::GetLightView()
 {
 	Vec3 lightPos = CUR_SCENE->GetLight()->GetTransform()->GetPosition();
 	Vec3 lightDir = CUR_SCENE->GetLight()->GetLight()->GetLightDesc().direction;
-	return ::XMMatrixLookAtLH(lightPos, lightPos + lightDir, Vec3(0, 1, 0));
+
+	Vec3 camPos = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
+	Vec3 virtualLightPos = camPos - (lightDir * 300.0f);
+
+	return ::XMMatrixLookAtLH(virtualLightPos, virtualLightPos + lightDir, Vec3(0, 1, 0));
 }
 
-Matrix ShadowDemo::GetLightProj()
+Matrix ShadowDemo::GetLightProj(ShadowMap::eShadowMapType shadowMapType)
 {
-	float shadowWidth = 100.0f;
-	float shadowHeight = 100.0f;
-	float shadowNear = 0.1f;
-	float shadowFar = 100.0f;
+	float shadowWidth = 0.0f;
+	switch (shadowMapType)
+	{
+		case ShadowMap::eShadowMapType::Near:
+		{
+			shadowWidth = 30.0f;
+			break;
+		}
+
+		case ShadowMap::eShadowMapType::Mid:
+		{
+			shadowWidth = 120;
+			break;
+		}
+
+		case ShadowMap::eShadowMapType::Far:
+		{
+			shadowWidth = 500;
+			break;
+		}
+	}
+
+	float shadowHeight = shadowWidth;
+	float shadowNear = -500.0f;
+	float shadowFar = 1000.0f;
 	return ::XMMatrixOrthographicLH(shadowWidth, shadowHeight, shadowNear, shadowFar);
 }
 
-Matrix ShadowDemo::GetLightVP()
+Matrix ShadowDemo::GetLightVP(ShadowMap::eShadowMapType shadowMapType)
 {
-	return GetLightView() * GetLightProj();
+	return GetLightView() * GetLightProj(shadowMapType);
 }
 
 void ShadowDemo::CreateTerrain()
@@ -150,8 +174,18 @@ void ShadowDemo::Update()
 		CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
 	}
 	{
-		ImGui::Begin("Shadow Debugger");
-		ImGui::Image((void*)_shadowMap->GetSRV().Get(), ImVec2(256, 256));
+		ImGui::Begin("Shadow Debugger Near");
+		ImGui::Image((void*)_shadowMaps->GetLayerSRV(0).Get(), ImVec2(256, 256));
+		ImGui::End();
+	}
+	{
+		ImGui::Begin("Shadow Debugger Mid");
+		ImGui::Image((void*)_shadowMaps->GetLayerSRV(1).Get(), ImVec2(256, 256));
+		ImGui::End();
+	}
+	{
+		ImGui::Begin("Shadow Debugger Far");
+		ImGui::Image((void*)_shadowMaps->GetLayerSRV(2).Get(), ImVec2(256, 256));
 		ImGui::End();
 	}
 }
@@ -167,23 +201,28 @@ void ShadowDemo::RenderShadow()
 	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	vp.RSSetViewport();
 
-	_shadowMap->ClearDepthStencilView();
-
-	DC->OMSetRenderTargets(0, nullptr, _shadowMap->GetDSV().Get());
-
-	_shadowShader->PushGlobalData(GetLightView(), GetLightProj());
-
-	for (auto& obj : _towerObjs)
+	for (int shadowMapType = (int)ShadowMap::eShadowMapType::Near; shadowMapType < ShadowMap::eShadowMapType::MAX; ++shadowMapType)
 	{
-		obj->GetModelRenderer()->SetPass(1);
+		ShadowMap::eShadowMapType type = (ShadowMap::eShadowMapType)shadowMapType;
+		_shadowMaps->ClearDepthStencilView(shadowMapType);
+
+		DC->OMSetRenderTargets(0, nullptr, _shadowMaps->GetDSV(shadowMapType).Get());
+
+		_shadowShader->PushGlobalData(GetLightView(), GetLightProj(type));
+
+		for (auto& obj : _towerObjs)
+		{
+			obj->GetModelRenderer()->SetPass(1);
+		}
+
+		INSTANCING->Render(_towerObjs, _shadowShader);
+
+		_rabbitObj->GetModelRenderer()->SetPass(0);
+		_rabbitObj->GetModelRenderer()->Render(_shadowShader);
+
+		_terrain->SetPass(0);
+		_terrain->Render(_shadowShader);
 	}
-
-	INSTANCING->Render(_towerObjs, _shadowShader);
-
-	_rabbitObj->GetModelRenderer()->SetPass(0);
-	_rabbitObj->GetModelRenderer()->Render(_shadowShader);
-	_terrain->SetPass(0);
-	_terrain->Render(_shadowShader);
 	
 	ID3D11RenderTargetView* nullRTV = nullptr;
 	DC->OMSetRenderTargets(1, &nullRTV, nullptr);
@@ -195,19 +234,24 @@ void ShadowDemo::RenderObjects()
 	GRAPHICS->GetViewport().RSSetViewport();
 	DC->OMSetRenderTargets(1, GRAPHICS->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
 
-	Matrix lightVP = GetLightVP();
+	ShadowDesc shadowBuffer;
+	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Near] = GetLightVP(ShadowMap::eShadowMapType::Near);
+	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Mid] = GetLightVP(ShadowMap::eShadowMapType::Mid);
+	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Far] = GetLightVP(ShadowMap::eShadowMapType::Far);
+	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
+	_shadowBuffer->CopyData(shadowBuffer);
 
 	shared_ptr<Shader> rabbitShader = _rabbitObj->GetModelRenderer()->GetShader(); // 또는 저장해둔 셰이더 변수
-	rabbitShader->GetSRV("ShadowMap")->SetResource(_shadowMap->GetSRV().Get());
-	rabbitShader->GetMatrix("LightViewProjection")->SetMatrix((float*)&lightVP);
+	rabbitShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get()); 
+	rabbitShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
 
 	shared_ptr<Shader> towerShader = _towerObjs[0]->GetModelRenderer()->GetShader();
-	towerShader->GetSRV("ShadowMap")->SetResource(_shadowMap->GetSRV().Get());
-	towerShader->GetMatrix("LightViewProjection")->SetMatrix((float*)&lightVP);
+	towerShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get());
+	towerShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
 
 	shared_ptr<Shader> terrainShader = _terrain->GetShader();
-	terrainShader->GetSRV("ShadowMap")->SetResource(_shadowMap->GetSRV().Get());
-	terrainShader->GetMatrix("LightViewProjection")->SetMatrix((float*)&lightVP);
+	terrainShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get());
+	terrainShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
 
 
 	for (auto& obj : _towerObjs)
@@ -220,7 +264,7 @@ void ShadowDemo::RenderObjects()
 	_terrain->SetPass(_pass);
 	_terrain->Render();
 
-	rabbitShader->GetSRV("ShadowMap")->SetResource(nullptr);
-	towerShader->GetSRV("ShadowMap")->SetResource(nullptr);
-	terrainShader->GetSRV("ShadowMap")->SetResource(nullptr);
+	rabbitShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
+	towerShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
+	terrainShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
 }
