@@ -28,16 +28,21 @@ void ShadowDemo::Init()
 	{
 		shared_ptr<GameObject> light = make_shared<GameObject>();
 		light->GetOrAddTransform()->SetPosition(Vec3{ 0.0f, 0.f, -5.f });
-		_lightPosition = Vec3{ 0.0f, 0.f, -5.f };
 		light->AddComponent(make_shared<Light>());
 
 		LightDesc lightDesc;
 		lightDesc.ambient = Vec4(0.4f);
 		lightDesc.diffuse = Vec4(1.0f);
 		lightDesc.specular = Vec4(0.1f);
-		lightDesc.direction = Vec3(0.5f, -1.0f, 0.f);
+
+		// Point Light
+		lightDesc.type = (int)LightDesc::eLightType::Directional;
+		lightDesc.angle = 45.0f;
+		lightDesc.range = 1.0f;
+		lightDesc.position = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
+		lightDesc.direction = CUR_SCENE->GetCamera()->GetTransform()->GetLook();
+
 		light->GetLight()->SetLightDesc(lightDesc);
-		_lightDirection = Vec3(0.5, -1.0f, 0.0f);
 
 		CUR_SCENE->Add(light);
 	}
@@ -51,13 +56,14 @@ void ShadowDemo::Init()
 
 void ShadowDemo::CreateShadowMap()
 {
-	_shadowMaps = make_shared<ShadowMap>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps = make_shared<ShadowMapDiractional>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	_shadowBuffer = make_shared<ConstantBuffer<ShadowDesc>>();
 	_shadowBuffer->Create();
 }
 
 Matrix ShadowDemo::GetLightView()
 {
+/*
 	Vec3 lightPos = CUR_SCENE->GetLight()->GetTransform()->GetPosition();
 	Vec3 lightDir = CUR_SCENE->GetLight()->GetLight()->GetLightDesc().direction;
 
@@ -65,10 +71,17 @@ Matrix ShadowDemo::GetLightView()
 	Vec3 virtualLightPos = camPos - (lightDir * 300.0f);
 
 	return ::XMMatrixLookAtLH(virtualLightPos, virtualLightPos + lightDir, Vec3(0, 1, 0));
+*/
+
+	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
+	Vec3 dir = desc.direction; // 고정값 또는 ImGui 슬라이더 (카메라 Look 금지)
+	dir.Normalize();
+	return ::XMMatrixLookAtLH(desc.position, desc.position + dir, Vec3(0, 1, 0));
 }
 
-Matrix ShadowDemo::GetLightProj(ShadowMap::eShadowMapType shadowMapType)
+Matrix ShadowDemo::GetLightProj(ShadowMapDiractional::eShadowMapType shadowMapType)
 {
+/*
 	float shadowWidth = 0.0f;
 	switch (shadowMapType)
 	{
@@ -92,12 +105,16 @@ Matrix ShadowDemo::GetLightProj(ShadowMap::eShadowMapType shadowMapType)
 	}
 
 	float shadowHeight = shadowWidth;
-	float shadowNear = -500.0f;
+	float shadowNear = 0.1f;
 	float shadowFar = 1000.0f;
 	return ::XMMatrixOrthographicLH(shadowWidth, shadowHeight, shadowNear, shadowFar);
+*/
+
+	float fovY = ::XMConvertToRadians(_lightAngle);
+	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 0.1f, _lightRange);
 }
 
-Matrix ShadowDemo::GetLightVP(ShadowMap::eShadowMapType shadowMapType)
+Matrix ShadowDemo::GetLightVP(ShadowMapDiractional::eShadowMapType shadowMapType)
 {
 	return GetLightView() * GetLightProj(shadowMapType);
 }
@@ -116,7 +133,6 @@ void ShadowDemo::CreateTerrain()
 
 void ShadowDemo::CreateModel()
 {
-
 	shared_ptr<Shader> shader = make_shared<Shader>(L"DefaultMeshForDemo.fx");
 	shared_ptr<GameObject> obj = make_shared<GameObject>();
 	_rabbitObj = obj;
@@ -162,17 +178,24 @@ void ShadowDemo::Update()
 	ImGui::SliderInt("Pass", &_pass, 0, 1);
 
 	{
-		ImGui::DragFloat3("Position", (float*)(&_lightPosition), 0.1f, -100.f, 359.9f);
-		
-		CUR_SCENE->GetLight()->GetTransform()->SetPosition(_lightPosition);
-	}
-	{
-		ImGui::DragFloat3("LightDirection", (float*)(&_lightDirection), 0.01f, -1.f, 1.f);
+		ImGui::DragFloat("LightAngle", (float*)(&_lightAngle), 0.1f, 0.1f, 359.9f);
+		ImGui::DragFloat("LightRange", (float*)(&_lightRange), 1.0f, 30.f, 180.f);
 
 		LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
-		desc.direction = _lightDirection;
+		desc.type = (int)LightDesc::eLightType::Point;
+		Vec3 camPos = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
+		Vec3 look = CUR_SCENE->GetCamera()->GetTransform()->GetLook();
+
+		desc.position = CUR_SCENE->GetCamera()->GetTransform()->GetPosition() + Vec3(0.f, 8.f, 0.f);
+		desc.direction = look;
+
+		desc.range = _lightRange;
+		desc.angle = _lightAngle;
+
 		CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
 	}
+
+	/*
 	{
 		ImGui::Begin("Shadow Debugger Near");
 		ImGui::Image((void*)_shadowMaps->GetLayerSRV(0).Get(), ImVec2(256, 256));
@@ -188,6 +211,7 @@ void ShadowDemo::Update()
 		ImGui::Image((void*)_shadowMaps->GetLayerSRV(2).Get(), ImVec2(256, 256));
 		ImGui::End();
 	}
+	*/
 }
 
 void ShadowDemo::Render()
@@ -201,9 +225,9 @@ void ShadowDemo::RenderShadow()
 	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	vp.RSSetViewport();
 
-	for (int shadowMapType = (int)ShadowMap::eShadowMapType::Near; shadowMapType < ShadowMap::eShadowMapType::MAX; ++shadowMapType)
+	for (int shadowMapType = (int)ShadowMapDiractional::eShadowMapType::Near; shadowMapType < ShadowMapDiractional::eShadowMapType::MAX; ++shadowMapType)
 	{
-		ShadowMap::eShadowMapType type = (ShadowMap::eShadowMapType)shadowMapType;
+		ShadowMapDiractional::eShadowMapType type = (ShadowMapDiractional::eShadowMapType)shadowMapType;
 		_shadowMaps->ClearDepthStencilView(shadowMapType);
 
 		DC->OMSetRenderTargets(0, nullptr, _shadowMaps->GetDSV(shadowMapType).Get());
@@ -235,9 +259,9 @@ void ShadowDemo::RenderObjects()
 	DC->OMSetRenderTargets(1, GRAPHICS->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
 
 	ShadowDesc shadowBuffer;
-	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Near] = GetLightVP(ShadowMap::eShadowMapType::Near);
-	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Mid] = GetLightVP(ShadowMap::eShadowMapType::Mid);
-	shadowBuffer.lightVP[ShadowMap::eShadowMapType::Far] = GetLightVP(ShadowMap::eShadowMapType::Far);
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Near] = GetLightVP(ShadowMapDiractional::eShadowMapType::Near);
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Mid] = GetLightVP(ShadowMapDiractional::eShadowMapType::Mid);
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Far] = GetLightVP(ShadowMapDiractional::eShadowMapType::Far);
 	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
 	_shadowBuffer->CopyData(shadowBuffer);
 

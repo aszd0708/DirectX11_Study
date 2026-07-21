@@ -19,13 +19,31 @@ struct TransformDesc
 // Light
 struct LightDesc
 {
+	enum eLightType
+	{
+		Directional = 0,
+		Point = 1,
+		Spot = 2,
+	};
+
 	Color ambient = Color(1.f, 1.f, 1.f, 1.f);
 	Color diffuse = Color(1.f, 1.f, 1.f, 1.f);
 	Color specular = Color(1.f, 1.f, 1.f, 1.f);
 	Color emissive = Color(1.f, 1.f, 1.f, 1.f);
 
+	// 라이트의 방향
 	Vec3 direction;
-	float padding0;
+	float range;
+
+	// 라이트의 위치
+	Vec3 position;
+	float angle;
+
+	/// <summary>
+	/// LightDesc::eLightType 값 참고
+	/// </summary>
+	int type;
+	Vec3 padding0 = Vec3(0.0f, 0.0f, 0.0f);
 };
 
 struct MaterialDesc

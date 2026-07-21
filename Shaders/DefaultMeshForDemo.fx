@@ -44,8 +44,7 @@ SSAOMeshOutput VS(VertexTextureNormalTangent input)
 float4 PS(SSAOMeshOutput input) : SV_TARGET
 {
     float3 normal = normalize(input.normal);
-    float value = saturate(dot(-GlobalLight.direction, normal)); 
-    float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
+    float4 color = ComputeLight(normal, input.uv, input.worldPosition.xyz);
     
     float cameraDepth = input.position.w;
     
@@ -59,7 +58,7 @@ float4 PS(SSAOMeshOutput input) : SV_TARGET
     
     float shadow = CalculateShadow(input.worldPosition, cascadeIndex, LightVP[cascadeIndex]);
     
-    return float4(color.rgb * value * shadow, input.linearDepth);
+    return float4(color.rgb * shadow, input.linearDepth);
 }
 
 float4 PS_OnlyShadow(SSAOMeshOutput input) : SV_TARGET

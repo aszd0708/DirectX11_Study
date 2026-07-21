@@ -28,7 +28,9 @@ SamplerState Sampler0
 };
 
 float4 PS(MeshOutput input) : SV_TARGET
-{    
+{
+    float3 normal = normalize(input.normal);
+    float4 color = ComputeLight(normal, input.uv, input.worldPosition.xyz);
     float cameraDepth = input.position.w;
     
     int cascadeIndex = 0;
@@ -40,8 +42,6 @@ float4 PS(MeshOutput input) : SV_TARGET
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
     float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
-    
-    float4 color = Texture0.Sample(Sampler0, input.uv);
     return float4(color.rgb * shadow, 1.0f);
 }
 

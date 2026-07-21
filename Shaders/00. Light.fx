@@ -7,14 +7,27 @@
 // Struct //
 ////////////
 
+#define LIGHT_TYPE_DIRECTIONAL 0
+#define LIGHT_TYPE_POINT 1
+#define LIGHT_TYPE_SPOT 2
+
 struct LightDesc
 {
+    // 모든 타입 포함
     float4 ambient;
     float4 diffuse;
     float4 specular;
     float4 emissive;
+    
     float3 direction;
-    float padding;
+    float range;
+    
+    float3 position;
+    float angle;
+    
+    // LIGHT_TYPE Define 참고
+    int type;    
+    float3 padding0;
 };
 
 struct MaterialDesc
@@ -62,12 +75,40 @@ Texture2DArray ShadowMapArray;
 // Function //
 //////////////
 
+// 
+float4 GetLightAttenuationAndLightDir(float3 worldPosition)
+{
+    float3 lightDir = GlobalLight.direction;
+    float attenuation = 1.0f; // 기본 강도 100
+    
+    float3 toPixel = worldPosition - GlobalLight.position;
+    float dist = length(toPixel);
+    lightDir = toPixel / dist; // 정규화
+    
+    // 거리가 Range에 가까워질수록 빛이 0에 수렴
+    attenuation = saturate(1.0f - (dist / GlobalLight.range));
+    
+    return float4(attenuation, lightDir);
+}
+
 float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
 {
     float4 ambientColor = 0;
     float4 diffuseColor = 0;
     float4 specularColor = 0;
     float4 emissiveColor = 0;
+    
+    float attenuation = 1.0f;
+    float3 lightDir = GlobalLight.direction;
+    switch (GlobalLight.type)
+    {
+        case LIGHT_TYPE_POINT:
+        case LIGHT_TYPE_SPOT:
+            float4 values = GetLightAttenuationAndLightDir(worldPosition);
+            attenuation = values.r;
+            lightDir = values.gba;
+            break;
+    }
     
     // Ambient
     {
@@ -78,13 +119,13 @@ float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
     // Diffuse
     {
         float4 color = DiffuseMap.Sample(LinearSampler, uv);    
-        float value = dot(-GlobalLight.direction, normal);    
+        float value = dot(-lightDir, normal);
         diffuseColor = color * value * GlobalLight.diffuse * Material.diffuse;
     }
     
     // Specular
     {
-        float3 R = GlobalLight.direction - (2 * normal * dot(GlobalLight.direction, normal));
+        float3 R = lightDir - (2 * normal * dot(lightDir, normal));
         R = normalize(R);
     
         float3 cameraPosition = CameraPosition();
@@ -110,7 +151,8 @@ float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
         emissiveColor = GlobalLight.emissive * Material.emissive * emissive;
     }
     
-    return ambientColor + diffuseColor + specularColor + emissiveColor;
+    float4 finalColor = ambientColor + diffuseColor + specularColor + emissiveColor;
+    return finalColor * attenuation;
 }
 
 void ComputeNormalMapping(inout float3 normal, float3 tangent, float2 uv)
@@ -174,6 +216,7 @@ float CalculateShadow(float4 worldPos, int cascadeIndex, Matrix lightVP)
     }
     shadowPercent /= 9.0f;
     return lerp(0.1f, 1.0f, shadowPercent);
+    //return 1.0f;
 }
 
 #endif

@@ -20,8 +20,8 @@ private:
 	void CreateShadowMap();
 
 	Matrix GetLightView();
-	Matrix GetLightProj(ShadowMap::eShadowMapType shadowMapType);
-	Matrix GetLightVP(ShadowMap::eShadowMapType shadowMapType);
+	Matrix GetLightProj(ShadowMapDiractional::eShadowMapType shadowMapType);
+	Matrix GetLightVP(ShadowMapDiractional::eShadowMapType shadowMapType);
 
 private:
 	void CreateTerrain();
@@ -38,7 +38,7 @@ private:
 
 private:
 	shared_ptr<Shader> _shadowShader;
-	shared_ptr<ShadowMap> _shadowMaps;
+	shared_ptr<ShadowMapDiractional> _shadowMaps;
 	shared_ptr<ConstantBuffer<ShadowDesc>> _shadowBuffer;
 
 	Vec3 _originCameraPosition;
@@ -58,7 +58,12 @@ private:
 	int _pass = 0;
 	int _lightMapTextureIndex = 0;
 
-	Vec3 _lightPosition;
-	Vec3 _lightDirection;
+	float _lightRange = 50.0f;
+	float _lightAngle = 0.1;
+
+
+	
+	//Vec3 _lightPosition;
+	//Vec3 _lightDirection;
 };
 
