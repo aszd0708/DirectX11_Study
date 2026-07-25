@@ -39,24 +39,19 @@ void ModelRenderer::Render(shared_ptr<Shader> customShader)
 		{
 			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
 		}
-		else
-		{
-			activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
-		}
 	}
 	else
 	{
 		activateShader = _shader;
 
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+
 		// Global Data
 		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
-	}
-
-	// Light
-	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
-	if (lightObj != nullptr)
-	{
-		activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
 	}
 
 	// Bones

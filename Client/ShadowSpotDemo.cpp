@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "ShadowDemo.h"
+#include "ShadowSpotDemo.h"
 #include "GameObject.h"
 #include "Camera.h"
 #include "CameraScript.h"
@@ -9,7 +9,7 @@
 #include "Terrain.h"
 #include "Model.h"
 
-void ShadowDemo::Init()
+void ShadowSpotDemo::Init()
 {
 	RESOURCES->Init();
 
@@ -54,72 +54,33 @@ void ShadowDemo::Init()
 	CreateTerrain();
 }
 
-void ShadowDemo::CreateShadowMap()
+void ShadowSpotDemo::CreateShadowMap()
 {
-	_shadowMaps = make_shared<ShadowMapDiractional>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	_shadowMaps = make_shared<ShadowMapSpot>(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	_shadowBuffer = make_shared<ConstantBuffer<ShadowDesc>>();
 	_shadowBuffer->Create();
 }
 
-Matrix ShadowDemo::GetLightView()
+Matrix ShadowSpotDemo::GetLightView()
 {
-/*
-	Vec3 lightPos = CUR_SCENE->GetLight()->GetTransform()->GetPosition();
-	Vec3 lightDir = CUR_SCENE->GetLight()->GetLight()->GetLightDesc().direction;
-
-	Vec3 camPos = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
-	Vec3 virtualLightPos = camPos - (lightDir * 300.0f);
-
-	return ::XMMatrixLookAtLH(virtualLightPos, virtualLightPos + lightDir, Vec3(0, 1, 0));
-*/
-
 	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
-	Vec3 dir = desc.direction; // 고정값 또는 ImGui 슬라이더 (카메라 Look 금지)
+	Vec3 dir = desc.direction;
 	dir.Normalize();
 	return ::XMMatrixLookAtLH(desc.position, desc.position + dir, Vec3(0, 1, 0));
 }
 
-Matrix ShadowDemo::GetLightProj(ShadowMapDiractional::eShadowMapType shadowMapType)
+Matrix ShadowSpotDemo::GetLightProj()
 {
-/*
-	float shadowWidth = 0.0f;
-	switch (shadowMapType)
-	{
-		case ShadowMap::eShadowMapType::Near:
-		{
-			shadowWidth = 30.0f;
-			break;
-		}
-
-		case ShadowMap::eShadowMapType::Mid:
-		{
-			shadowWidth = 120;
-			break;
-		}
-
-		case ShadowMap::eShadowMapType::Far:
-		{
-			shadowWidth = 500;
-			break;
-		}
-	}
-
-	float shadowHeight = shadowWidth;
-	float shadowNear = 0.1f;
-	float shadowFar = 1000.0f;
-	return ::XMMatrixOrthographicLH(shadowWidth, shadowHeight, shadowNear, shadowFar);
-*/
-
-	float fovY = ::XMConvertToRadians(_lightAngle);
-	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 0.1f, _lightRange);
+	float fovY = ::XMConvertToRadians(XMMin(XMMax(_lightAngle, 1.0f), 170.0f));
+	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, _lightRange);
 }
 
-Matrix ShadowDemo::GetLightVP(ShadowMapDiractional::eShadowMapType shadowMapType)
+Matrix ShadowSpotDemo::GetLightVP()
 {
-	return GetLightView() * GetLightProj(shadowMapType);
+	return GetLightView() * GetLightProj();
 }
 
-void ShadowDemo::CreateTerrain()
+void ShadowSpotDemo::CreateTerrain()
 {
 	_terrainObject = make_shared<GameObject>();
 	shared_ptr<Texture> texture = RESOURCES->Load<Texture>(L"Grass", L"..\\Resources\\Textures\\Terrain\\BaseColor.jpg");
@@ -131,7 +92,7 @@ void ShadowDemo::CreateTerrain()
 	_terrainObject->GetOrAddTransform()->SetPosition(Vec3(-20.0f, -10.0f, -20.0f));
 }
 
-void ShadowDemo::CreateModel()
+void ShadowSpotDemo::CreateModel()
 {
 	shared_ptr<Shader> shader = make_shared<Shader>(L"DefaultMeshForDemo.fx");
 	shared_ptr<GameObject> obj = make_shared<GameObject>();
@@ -148,9 +109,10 @@ void ShadowDemo::CreateModel()
 		modelRenderer->SetModel(model);
 		modelRenderer->SetPass(0);
 	}
+	obj->GetOrAddTransform()->SetPosition(Vec3(4.0f, 3.0f, 4.0f));
 }
 
-void ShadowDemo::CreateOtherModels()
+void ShadowSpotDemo::CreateOtherModels()
 {
 	shared_ptr<class Model> m1 = make_shared<Model>();
 	m1->ReadModel(L"Tower/Tower");
@@ -173,34 +135,37 @@ void ShadowDemo::CreateOtherModels()
 }
 
 
-void ShadowDemo::Update()
+void ShadowSpotDemo::Update()
 {
-	ImGui::SliderInt("Pass", &_pass, 0, 1);
+	ImGui::SliderInt("Pass", &_pass, 0, 2);
 
 	{
-		ImGui::DragFloat("LightAngle", (float*)(&_lightAngle), 0.1f, 0.1f, 359.9f);
+		ImGui::DragFloat("LightAngle", (float*)(&_lightAngle), 0.1f, 0.1f, 170.0f);
 		ImGui::DragFloat("LightRange", (float*)(&_lightRange), 1.0f, 30.f, 180.f);
 
 		LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
-		desc.type = (int)LightDesc::eLightType::Point;
+		desc.type = (int)LightDesc::eLightType::Spot;
 		Vec3 camPos = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
 		Vec3 look = CUR_SCENE->GetCamera()->GetTransform()->GetLook();
 
-		desc.position = _rabbitObj->GetTransform()->GetPosition() + Vec3(0.f, 8.f, 0.f);
-		desc.direction = look;
-
+		Vec3 target = camPos + look * 10.0f;              // 내가 보는 지점
+		desc.position = _rabbitObj->GetTransform()->GetPosition() + Vec3(1.f, 1.f, 0.f);
+		//Vec3 dir = target - desc.position;                 // 그 지점을 향해 내리쬐기
+		//dir.Normalize();
+		//desc.direction = dir;
+		//
 		desc.range = _lightRange;
 		desc.angle = _lightAngle;
 
 		CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
 	}
 
-	/*
 	{
-		ImGui::Begin("Shadow Debugger Near");
-		ImGui::Image((void*)_shadowMaps->GetLayerSRV(0).Get(), ImVec2(256, 256));
+		ImGui::Begin("Shadow Debugger");
+		ImGui::Image((void*)_shadowMaps->GetSRV().Get(), ImVec2(256, 256));
 		ImGui::End();
 	}
+	/*
 	{
 		ImGui::Begin("Shadow Debugger Mid");
 		ImGui::Image((void*)_shadowMaps->GetLayerSRV(1).Get(), ImVec2(256, 256));
@@ -214,72 +179,70 @@ void ShadowDemo::Update()
 	*/
 }
 
-void ShadowDemo::Render()
+void ShadowSpotDemo::Render()
 {
 	RenderShadow();
 	RenderObjects();
 }
 
-void ShadowDemo::RenderShadow()
+void ShadowSpotDemo::RenderShadow()
 {
 	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	vp.RSSetViewport();
 
-	for (int shadowMapType = (int)ShadowMapDiractional::eShadowMapType::Near; shadowMapType < ShadowMapDiractional::eShadowMapType::MAX; ++shadowMapType)
+
+	_shadowMaps->ClearDepthStencilView();
+
+	DC->OMSetRenderTargets(0, nullptr, _shadowMaps->GetDSV().Get());
+
+	_shadowShader->PushGlobalData(GetLightView(), GetLightProj());
+
+	for (auto& obj : _towerObjs)
 	{
-		ShadowMapDiractional::eShadowMapType type = (ShadowMapDiractional::eShadowMapType)shadowMapType;
-		_shadowMaps->ClearDepthStencilView(shadowMapType);
-
-		DC->OMSetRenderTargets(0, nullptr, _shadowMaps->GetDSV(shadowMapType).Get());
-
-		_shadowShader->PushGlobalData(GetLightView(), GetLightProj(type));
-
-		for (auto& obj : _towerObjs)
-		{
-			obj->GetModelRenderer()->SetPass(1);
-		}
-
-		INSTANCING->Render(_towerObjs, _shadowShader);
-
-		_rabbitObj->GetModelRenderer()->SetPass(0);
-		_rabbitObj->GetModelRenderer()->Render(_shadowShader);
-
-		_terrain->SetPass(0);
-		_terrain->Render(_shadowShader);
+		obj->GetModelRenderer()->SetPass(1);
 	}
+
+	INSTANCING->Render(_towerObjs, _shadowShader);
+
+	_rabbitObj->GetModelRenderer()->SetPass(0);
+	_rabbitObj->GetModelRenderer()->Render(_shadowShader);
+
+	_terrain->SetPass(0);
+	_terrain->Render(_shadowShader);
 	
 	ID3D11RenderTargetView* nullRTV = nullptr;
+	ID3D11DepthStencilView* nullDSV = nullptr;
 	DC->OMSetRenderTargets(1, &nullRTV, nullptr);
 }
 
-void ShadowDemo::RenderObjects()
+void ShadowSpotDemo::RenderObjects()
 {
 	GRAPHICS->SetViewport(GAME->GetGameDesc().width, GAME->GetGameDesc().height);
 	GRAPHICS->GetViewport().RSSetViewport();
 	DC->OMSetRenderTargets(1, GRAPHICS->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
 
 	ShadowDesc shadowBuffer;
-	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Near] = GetLightVP(ShadowMapDiractional::eShadowMapType::Near);
-	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Mid] = GetLightVP(ShadowMapDiractional::eShadowMapType::Mid);
-	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Far] = GetLightVP(ShadowMapDiractional::eShadowMapType::Far);
+	shadowBuffer.lightVP = GetLightVP();
 	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
 	_shadowBuffer->CopyData(shadowBuffer);
 
-	shared_ptr<Shader> rabbitShader = _rabbitObj->GetModelRenderer()->GetShader(); // 또는 저장해둔 셰이더 변수
+	shared_ptr<Shader> rabbitShader = _rabbitObj->GetModelRenderer()->GetShader();
 	rabbitShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get()); 
-	rabbitShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
+	rabbitShader->GetSRV("ShadowMapSpot")->SetResource(_shadowMaps->GetSRV().Get());
 
 	shared_ptr<Shader> towerShader = _towerObjs[0]->GetModelRenderer()->GetShader();
 	towerShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get());
-	towerShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
+	towerShader->GetSRV("ShadowMapSpot")->SetResource(_shadowMaps->GetSRV().Get());
 
 	shared_ptr<Shader> terrainShader = _terrain->GetShader();
 	terrainShader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadowBuffer->GetComPtr().Get());
-	terrainShader->GetSRV("ShadowMapArray")->SetResource(_shadowMaps->GetSRV().Get());
+	terrainShader->GetSRV("ShadowMapSpot")->SetResource(_shadowMaps->GetSRV().Get());
 
 
 	for (auto& obj : _towerObjs)
+	{
 		obj->GetModelRenderer()->SetPass(_pass);
+	}
 	INSTANCING->Render(_towerObjs);
 
 	_rabbitObj->GetModelRenderer()->SetPass(_pass);
@@ -288,7 +251,7 @@ void ShadowDemo::RenderObjects()
 	_terrain->SetPass(_pass);
 	_terrain->Render();
 
-	rabbitShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
-	towerShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
-	terrainShader->GetSRV("ShadowMapArray")->SetResource(nullptr);
+	rabbitShader->GetSRV("ShadowMapSpot")->SetResource(nullptr);
+	towerShader->GetSRV("ShadowMapSpot")->SetResource(nullptr);
+	terrainShader->GetSRV("ShadowMapSpot")->SetResource(nullptr);
 }

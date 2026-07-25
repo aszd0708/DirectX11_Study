@@ -1,5 +1,7 @@
 #pragma once
-class ShadowMap
+#include "ShadowMapBase.h"
+
+class ShadowMapDiractional : public ShadowMapBase
 {
 public:
 	enum eShadowMapType
@@ -11,11 +13,15 @@ public:
 	};
 
 public:
-	ShadowMap(float width, float height);
-	~ShadowMap();
+	ShadowMapDiractional(float width, float height);
+	virtual ~ShadowMapDiractional() override;
 
 public:
 	void ClearDepthStencilView(int index);
+
+public:
+	void Create(uint32 width, uint32 height) override;
+	void BindRTVAndDSV() override;
 	
 private:
 	void CreateShaderMapTexture(float width, float height);
@@ -24,13 +30,15 @@ private:
 
 public:
 	ComPtr<ID3D11DepthStencilView> GetDSV(int index) { return _dsvs[index]; }
-	ComPtr<ID3D11ShaderResourceView> GetSRV() { return _srv; }
+
+	// µð¹ö±ë¿ë
 	ComPtr<ID3D11ShaderResourceView> GetLayerSRV(int index) { return _srvs[index]; }
 
 private:
 	ComPtr<ID3D11DepthStencilView> _dsvs[eShadowMapType::MAX];
-	ComPtr<ID3D11ShaderResourceView> _srv;
-	ComPtr<ID3D11ShaderResourceView> _srvs[eShadowMapType::MAX];
 	ComPtr<ID3D11Texture2D> _shaderMapTexture;
+
+	// µð¹ö±ë¿ë
+	ComPtr<ID3D11ShaderResourceView> _srvs[eShadowMapType::MAX];
 };
 

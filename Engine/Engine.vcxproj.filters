@@ -43,6 +43,9 @@
     <Filter Include="04. Component\Collision">
       <UniqueIdentifier>{e3667d9c-ddfb-4f2b-90ab-fa59d1ff0dfc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Graphics\Shadow">
+      <UniqueIdentifier>{0765aae6-9b99-4ffd-aa06-b94c8090e742}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -237,8 +240,17 @@
     <ClInclude Include="RenderTargetGroup.h">
       <Filter>01. Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>01. Graphics</Filter>
+    <ClInclude Include="ShadowMapDiractional.h">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapBase.h">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapSpot.h">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapPoint.h">
+      <Filter>01. Graphics\Shadow</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -422,8 +434,17 @@
     <ClCompile Include="RenderTargetGroup.cpp">
       <Filter>01. Graphics</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
-      <Filter>01. Graphics</Filter>
+    <ClCompile Include="ShadowMapDiractional.cpp">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapBase.cpp">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapSpot.cpp">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapPoint.cpp">
+      <Filter>01. Graphics\Shadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

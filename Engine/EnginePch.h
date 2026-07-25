@@ -81,7 +81,9 @@ using namespace Microsoft::WRL;
 
 // RenderTarget
 #include "RenderTarget.h"
-#include "ShadowMap.h"
+#include "ShadowMapDiractional.h"
+#include "ShadowMapSpot.h"
+#include "ShadowMapPoint.h"
 
 #include "MonoBehaviour.h"
 #include "GameObject.h"

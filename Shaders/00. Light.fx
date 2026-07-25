@@ -66,10 +66,11 @@ Texture2D NormalMap;
 
 cbuffer ShadowBuffer
 {
-    Matrix LightVP[3];
+    Matrix LightVP;
     float4 CascadeEnd;
 };
 Texture2DArray ShadowMapArray;
+Texture2D ShadowMapSpot : register(t4);
 
 //////////////
 // Function //
@@ -83,10 +84,28 @@ float4 GetLightAttenuationAndLightDir(float3 worldPosition)
     
     float3 toPixel = worldPosition - GlobalLight.position;
     float dist = length(toPixel);
-    lightDir = toPixel / dist; // 정규화
+    lightDir = toPixel / dist;
     
     // 거리가 Range에 가까워질수록 빛이 0에 수렴
     attenuation = saturate(1.0f - (dist / GlobalLight.range));
+    
+    if (GlobalLight.type == LIGHT_TYPE_SPOT)
+    {
+        float cosAngle = dot(GlobalLight.direction, lightDir);
+        
+        float spotRadian = radians(GlobalLight.angle);
+        float minCos = cos(spotRadian);
+        
+        if (cosAngle < minCos)
+        {
+            attenuation = 0.0f;
+        }
+        else
+        {
+            float maxCos = cos(radians(GlobalLight.angle * 0.9f));
+            attenuation *= smoothstep(minCos, maxCos, cosAngle);
+        }
+    }
     
     return float4(attenuation, lightDir);
 }
@@ -216,7 +235,44 @@ float CalculateShadow(float4 worldPos, int cascadeIndex, Matrix lightVP)
     }
     shadowPercent /= 9.0f;
     return lerp(0.1f, 1.0f, shadowPercent);
-    //return 1.0f;
+}
+
+float CalculateShadowSpot(float4 worldPos, Matrix lightVP, float3 normal)
+{
+    float4 lightSpacePos = mul(worldPos, lightVP);
+    
+    float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
+    
+    projCoords.x = projCoords.x * 0.5f + 0.5f;
+    projCoords.y = -projCoords.y * 0.5f + 0.5f;
+    
+    if (projCoords.x < 0.0f || projCoords.x > 1.0f ||
+        projCoords.y < 0.0f || projCoords.y > 1.0f ||
+        projCoords.z < 0.0f || projCoords.z > 1.0f)
+    {
+        return 1.0f;
+    }
+    
+    float currentDepth = projCoords.z;
+    float3 lightDir = worldPos.xyz - GlobalLight.position;
+    float ndotl = saturate(dot(normalize(normal), -normalize(lightDir)));
+    float bias = max(0.002f * (1.0f - ndotl), 0.0005f);
+    float shadowPercent = 0.0f;
+    float2 texelSize = 1.0f / 4096.0f;
+    
+    for (int x = -1; x <= 1; ++x)
+    {
+        for (int y = -1; y <= 1; ++y)
+        {
+            float2 offset = float2(x, y) * texelSize;
+            
+            shadowPercent += ShadowMapSpot.SampleCmpLevelZero(ComparisonSampler,
+                             projCoords.xy + offset,
+                             projCoords.z - bias).r;
+        }
+    }
+    shadowPercent /= 9.0f;
+    return lerp(0.1f, 1.0f, shadowPercent);
 }
 
 #endif

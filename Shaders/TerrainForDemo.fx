@@ -41,7 +41,7 @@ float4 PS(MeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
+    float shadow = CalculateShadowSpot(float4(input.worldPosition.xyz, 1.0f), LightVP, input.normal);
     return float4(color.rgb * shadow, 1.0f);
 }
 
@@ -57,13 +57,24 @@ float4 PS_OnlyShadow(MeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadow(float4(input.worldPosition.xyz, 1.0f), cascadeIndex, LightVP[cascadeIndex]);
+    float shadow = CalculateShadowSpot(float4(input.worldPosition.xyz, 1.0f), LightVP, input.normal);
     
     return float4(shadow, shadow, shadow, 1.0f);
+}
+
+float4 PS_OnlyLight(MeshOutput input) : SV_TARGET
+{
+    float3 normal = normalize(input.normal);
+    float4 color = ComputeLight(normal, input.uv, input.worldPosition.xyz);
+    
+    float cameraDepth = input.position.w;
+    
+    return float4(color.rgb, 1.0f);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS) // 0번 패스: 오리지널
     PASS_VP(P1, VS, PS_OnlyShadow) // 0번 패스: 오리지널
+    PASS_VP(P2, VS, PS_OnlyLight) // 0번 패스: 오리지널
 };

@@ -214,7 +214,10 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowMapDiractional.h" />
+    <ClInclude Include="ShadowMapBase.h" />
+    <ClInclude Include="ShadowMapPoint.h" />
+    <ClInclude Include="ShadowMapSpot.h" />
     <ClInclude Include="SimpleMath.h" />
     <ClInclude Include="SphereCollider.h" />
     <ClInclude Include="StructuredBuffer.h" />
@@ -297,7 +300,10 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="ShadowMapDiractional.cpp" />
+    <ClCompile Include="ShadowMapBase.cpp" />
+    <ClCompile Include="ShadowMapPoint.cpp" />
+    <ClCompile Include="ShadowMapSpot.cpp" />
     <ClCompile Include="SimpleMath.cpp" />
     <ClCompile Include="SphereCollider.cpp" />
     <ClCompile Include="StructuredBuffer.cpp" />

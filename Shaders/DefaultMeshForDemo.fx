@@ -56,7 +56,7 @@ float4 PS(SSAOMeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadow(input.worldPosition, cascadeIndex, LightVP[cascadeIndex]);
+    float shadow = CalculateShadowSpot(input.worldPosition, LightVP, normal);
     
     return float4(color.rgb * shadow, input.linearDepth);
 }
@@ -74,13 +74,32 @@ float4 PS_OnlyShadow(SSAOMeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadow(input.worldPosition, cascadeIndex, LightVP[cascadeIndex]);
+    float shadow = CalculateShadowSpot(input.worldPosition, LightVP, input.normal);
     
-    return float4(cameraDepth, cameraDepth, cameraDepth, input.linearDepth);
+    return float4(shadow, shadow, shadow, input.linearDepth);
+}
+
+float4 PS_OnlyLight(SSAOMeshOutput input) : SV_TARGET
+{
+    float3 normal = normalize(input.normal);
+    float4 color = ComputeLight(normal, input.uv, input.worldPosition.xyz);
+    
+    float cameraDepth = input.position.w;
+    
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
+    
+    return float4(color.rgb, input.linearDepth);
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
     PASS_VP(P1, VS, PS_OnlyShadow)
+    PASS_VP(P2, VS, PS_OnlyLight)
 };

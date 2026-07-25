@@ -23,15 +23,6 @@ void Terrain::Render(shared_ptr<Shader> customShader)
 	if (customShader != nullptr)
 	{
 		activateShader = customShader;
-		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
-		if (lightObj != nullptr)
-		{
-			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
-		}
-		else
-		{
-			activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
-		}
 	}
 	else
 	{
@@ -46,12 +37,14 @@ void Terrain::Render(shared_ptr<Shader> customShader)
 		MaterialDesc material; // diffuse 기본값 (1,1,1,1)
 		material.ambient = Vec4(1.0f);
 		activateShader->PushMaterialData(material);
+
+		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
 	}
 
 	TransformDesc transformDesc;
 	transformDesc.W = GetTransform()->GetWorldMatrix();
 	activateShader->PushTransformData(transformDesc);
-	activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	//activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
 
 	activateShader->GetSRV("DiffuseMap")->SetResource(_texture->GetComPtr().Get());
 	

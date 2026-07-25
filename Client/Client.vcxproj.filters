@@ -84,6 +84,9 @@
     <ClCompile Include="ShadowDemo.cpp">
       <Filter>Game\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowSpotDemo.cpp">
+      <Filter>Game\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -126,6 +129,9 @@
       <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="ShadowDemo.h">
+      <Filter>Game\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowSpotDemo.h">
       <Filter>Game\Demo</Filter>
     </ClInclude>
   </ItemGroup>

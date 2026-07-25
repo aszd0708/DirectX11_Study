@@ -28,6 +28,7 @@
     <ClInclude Include="RenderObject.h" />
     <ClInclude Include="SceneDemo.h" />
     <ClInclude Include="ShadowDemo.h" />
+    <ClInclude Include="ShadowSpotDemo.h" />
     <ClInclude Include="SSAODemo.h" />
     <ClInclude Include="StructuredBufferDemo.h" />
     <ClInclude Include="Terrain.h" />
@@ -46,6 +47,7 @@
     <ClCompile Include="RenderObject.cpp" />
     <ClCompile Include="SceneDemo.cpp" />
     <ClCompile Include="ShadowDemo.cpp" />
+    <ClCompile Include="ShadowSpotDemo.cpp" />
     <ClCompile Include="SSAODemo.cpp" />
     <ClCompile Include="StructuredBufferDemo.cpp" />
     <ClCompile Include="Terrain.cpp" />

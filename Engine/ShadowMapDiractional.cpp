@@ -1,19 +1,18 @@
 #include "pch.h"
-#include "ShadowMap.h"
+#include "ShadowMapDiractional.h"
+#include "ShadowMapBase.h"
 
-ShadowMap::ShadowMap(float width, float height)
+ShadowMapDiractional::ShadowMapDiractional(float width, float height) : ShadowMapBase()
 {
-	CreateShaderMapTexture(width, height);
-	CreateDepthStencilView();
-	CreateShaderResourceView();
+	Create(width, height);
 }
 
-ShadowMap::~ShadowMap()
+ShadowMapDiractional::~ShadowMapDiractional()
 {
 	
 }
 
-void ShadowMap::ClearDepthStencilView(int index)
+void ShadowMapDiractional::ClearDepthStencilView(int index)
 {
 	if (_dsvs[index])
 	{
@@ -21,7 +20,24 @@ void ShadowMap::ClearDepthStencilView(int index)
 	}
 }
 
-void ShadowMap::CreateShaderMapTexture(float width, float height)
+void ShadowMapDiractional::Create(uint32 width, uint32 height)
+{
+	
+	_width = width;
+	_height = height;
+
+	CreateShaderMapTexture(width, height);
+	CreateDepthStencilView();
+	CreateShaderResourceView();
+}
+
+void ShadowMapDiractional::BindRTVAndDSV()
+{
+	Viewport vp(_width, _height);
+	vp.RSSetViewport();
+}
+
+void ShadowMapDiractional::CreateShaderMapTexture(float width, float height)
 {
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
@@ -41,7 +57,7 @@ void ShadowMap::CreateShaderMapTexture(float width, float height)
 	DEVICE->CreateTexture2D(&desc, nullptr, _shaderMapTexture.GetAddressOf());
 }
 
-void ShadowMap::CreateDepthStencilView()
+void ShadowMapDiractional::CreateDepthStencilView()
 {
 	D3D11_DEPTH_STENCIL_VIEW_DESC desc;
 	ZeroMemory(&desc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
@@ -60,7 +76,7 @@ void ShadowMap::CreateDepthStencilView()
 	}
 }
 
-void ShadowMap::CreateShaderResourceView()
+void ShadowMapDiractional::CreateShaderResourceView()
 {
 	D3D11_SHADER_RESOURCE_VIEW_DESC desc;
 	ZeroMemory(&desc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
@@ -70,7 +86,7 @@ void ShadowMap::CreateShaderResourceView()
 	desc.Texture2DArray.MostDetailedMip = 0;
 	desc.Texture2DArray.MipLevels = 1;
 	desc.Texture2DArray.FirstArraySlice = 0;
-	desc.Texture2DArray.ArraySize = 3;
+	desc.Texture2DArray.ArraySize = (int)eShadowMapType::MAX;
 
 	DEVICE->CreateShaderResourceView(_shaderMapTexture.Get(), &desc, _srv.GetAddressOf());
 
@@ -80,10 +96,10 @@ void ShadowMap::CreateShaderResourceView()
 	layerSrvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 	layerSrvDesc.Texture2DArray.MostDetailedMip = 0;
 	layerSrvDesc.Texture2DArray.MipLevels = 1;
-	layerSrvDesc.Texture2DArray.ArraySize = 1; // ⭐️ 딱 1개 층만 보겠다고 선언!
+	layerSrvDesc.Texture2DArray.ArraySize = 1;
 	for (int i = 0; i < eShadowMapType::MAX; ++i)
 	{
-		layerSrvDesc.Texture2DArray.FirstArraySlice = i; // ⭐️ i번째 층(0, 1, 2) 지정!
+		layerSrvDesc.Texture2DArray.FirstArraySlice = i;
 		HRESULT hr = DEVICE->CreateShaderResourceView(_shaderMapTexture.Get(), &layerSrvDesc, _srvs[i].GetAddressOf());
 		CHECK(hr);
 	}
