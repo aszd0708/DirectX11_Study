@@ -39,31 +39,15 @@ void Model::ReadMaterial(wstring filename)
 		node = materialNode->FirstChildElement();
 		material->SetName(Utils::ToWString(node->GetText()));
 
-		// Diffuse Texture
+		// BaseColor Texture
 		node = node->NextSiblingElement();
 		if (node->GetText())
 		{
 			wstring textureStr = Utils::ToWString(node->GetText());
 			if (textureStr.length() > 0)
 			{
-				auto texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
-				material->SetDiffuseMap(texture);
-			}
-		}
-
-		// Specular Texture
-		node = node->NextSiblingElement();
-		if (node->GetText())
-		{
-			wstring texture = Utils::ToWString(node->GetText());
-			if (texture.length() > 0)
-			{
-				wstring textureStr = Utils::ToWString(node->GetText());
-				if (textureStr.length() > 0)
-				{
-					auto texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
-					material->SetSpecularMap(texture);
-				}
+				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
+				material->SetBaseColorMap(texture);
 			}
 		}
 
@@ -79,6 +63,31 @@ void Model::ReadMaterial(wstring filename)
 			}
 		}
 
+		// Metallic Texture
+		node = node->NextSiblingElement();
+		if (node->GetText())
+		{
+			wstring textureStr = Utils::ToWString(node->GetText());
+			if (textureStr.length() > 0)
+			{
+				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
+				material->SetMetallicMap(texture);
+			}
+		}
+
+		// Roughness Texture
+		node = node->NextSiblingElement();
+		if (node->GetText())
+		{
+			wstring textureStr = Utils::ToWString(node->GetText());
+			if (textureStr.length() > 0)
+			{
+				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
+				material->SetRoughnessMap(texture);
+			}
+		}
+
+		/*
 		// Ambient
 		{
 			node = node->NextSiblingElement();
@@ -126,6 +135,7 @@ void Model::ReadMaterial(wstring filename)
 			color.w = node->FloatAttribute("A");
 			material->GetMaterialDesc().emissive = color;
 		}
+		*/
 
 		_materials.push_back(material);
 

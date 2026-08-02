@@ -25,14 +25,16 @@ struct asMaterial
 {
 	string name;
 
-	Color ambient;
-	Color diffuse;
-	Color specular;
+	Color baseColor;
+	float metallic;
+	float roughness;
 	Color emissive;
 
-	string diffuseFile;
-	string specularFile;
-	string normalFile;
+	string baseColorMapFile;
+	string normalMapFile;
+	string metallicMapFile;
+	string roughnessMapFile;
+	string emissiveMapFile;
 };
 
 // Animation

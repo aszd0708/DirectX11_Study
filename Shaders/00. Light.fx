@@ -2,6 +2,7 @@
 #define _LIGHT_FX_
 
 #include "00. Global.fx"
+#include "00. PBR.fx"
 
 ////////////
 // Struct //
@@ -30,14 +31,6 @@ struct LightDesc
     float3 padding0;
 };
 
-struct MaterialDesc
-{
-    float4 ambient;
-    float4 diffuse;
-    float4 specular;
-    float4 emissive;
-};
-
 /////////////////
 // ConstBuffer //
 /////////////////
@@ -47,18 +40,14 @@ cbuffer LightBuffer
     LightDesc GlobalLight;
 };
 
-cbuffer MaterialBuffer
-{
-    MaterialDesc Material;
-};
 
 /////////
-// SRV //
+// PBR //
 /////////
-
-Texture2D DiffuseMap;
-Texture2D SpecularMap;
+Texture2D BaseColorMap;
 Texture2D NormalMap;
+Texture2D MetallicMap;
+Texture2D RoughnessMap;
 
 ////////////
 // SHADOW //
@@ -68,9 +57,14 @@ cbuffer ShadowBuffer
 {
     Matrix LightVP;
     float4 CascadeEnd;
+    
+    float2 LightProjValues; // x = _33, y = _43 
+    
+    float2 Padding;
 };
 Texture2DArray ShadowMapArray;
-Texture2D ShadowMapSpot : register(t4);
+Texture2D ShadowMapSpot;
+TextureCube ShadowMapCubePoint;
 
 //////////////
 // Function //
@@ -129,6 +123,8 @@ float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
             break;
     }
     
+    /*
+
     // Ambient
     {
         float4 color = GlobalLight.ambient * Material.ambient;
@@ -172,6 +168,8 @@ float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
     
     float4 finalColor = ambientColor + diffuseColor + specularColor + emissiveColor;
     return finalColor * attenuation;
+*/
+    return (1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void ComputeNormalMapping(inout float3 normal, float3 tangent, float2 uv)
@@ -272,6 +270,32 @@ float CalculateShadowSpot(float4 worldPos, Matrix lightVP, float3 normal)
         }
     }
     shadowPercent /= 9.0f;
+    return lerp(0.1f, 1.0f, shadowPercent);
+}
+
+float CalculateShadowPoint(float4 worldPos, Matrix lightVP, float3 normal)
+{
+    float4 lightSpacePos = mul(worldPos, lightVP);
+    float3 lightDir = worldPos.xyz - GlobalLight.position;
+    
+    float dist = length(lightDir);
+    if (dist > GlobalLight.range)
+    {
+        return 1.0f;
+    }
+    
+    float ndotl = saturate(dot(normalize(normal), -normalize(lightDir)));
+    float bias = max(0.002f * (1.0f - ndotl), 0.0005f);
+    float shadowPercent = 0.0f;
+    float2 texelSize = 1.0f / 4096.0f;
+    
+    float maxAxis = max(abs(lightDir.x), max(abs(lightDir.y), abs(lightDir.z)));
+    float currentDepth = LightProjValues.x + (LightProjValues.y / maxAxis);
+    shadowPercent = ShadowMapCubePoint.SampleCmpLevelZero(
+                     ComparisonSampler,
+                     lightDir,
+                     currentDepth - bias).r;
+    
     return lerp(0.1f, 1.0f, shadowPercent);
 }
 

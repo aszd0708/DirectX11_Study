@@ -23,7 +23,7 @@ VS_OUT VS(VertexTextureNormalTangent input)
 
 float4 PS(VS_OUT input) : SV_TARGET
 {
-    float4 color = DiffuseMap.Sample(LinearSampler, input.uv);
+    float4 color = BaseColorMap.Sample(LinearSampler, input.uv);
     return color;
 }
 

@@ -17,7 +17,6 @@ void ShadowMapBase::Create(uint32 width, uint32 height)
 
 void ShadowMapBase::BindRTVAndDSV()
 {
-
 	Viewport vp(_width, _height);
 	vp.RSSetViewport();
 }

@@ -152,4 +152,39 @@ float3 CameraPosition()
     return VInv._41_42_43;
 }
 
+float3 CameraDirection(float3 worldPosition)
+{
+    float3 cameraPosition = CameraPosition();
+    float3 viewVector = normalize(cameraPosition - worldPosition);
+    return viewVector;
+}
+
+//////////////
+// Material //
+//////////////
+
+struct MaterialDesc
+{
+    float4 albedo;
+    float4 emissive;
+    
+    float metallic;
+    float roughness;
+    float ao;
+    int padding0;
+    
+    int hasBaseColorMap;
+    int hasNormalMap;
+    int hasMetallicMap;
+    int hasRoughnessMap;
+    
+    int hasAOMap;
+    float3 padding;
+};
+
+cbuffer MaterialBuffer
+{
+    MaterialDesc Material;
+};
+
 #endif

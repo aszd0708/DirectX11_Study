@@ -160,7 +160,8 @@ float GetBilateralBlur(float2 currentPosition)
 
 float4 PS_ShowTexture(SSAOMeshOutput input) : SV_TARGET
 {
-    float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
+    float4 color = ComputeLight(input.normal, input.uv, input.worldPosition);
+    //float3 color = DiffuseMap.Sample(LinearSampler, input.uv);
     float depth = input.linearDepth;
     
     return float4(color.rgb, depth);
@@ -201,7 +202,8 @@ float4 PS_Result(SSAOMeshOutput input) : SV_TARGET
 {
     float2 currentPosition = input.uv.xy;
     float blurredAO = GetBilateralBlur(currentPosition);
-    float4 color = DiffuseMap.Sample(LinearSampler, input.uv);
+    //float4 color = DiffuseMap.Sample(LinearSampler, input.uv);
+    float4 color = ComputeLight(input.normal, input.uv, input.worldPosition);
     float depth = input.linearDepth;
     return float4(color.rgb * blurredAO, depth);
 }

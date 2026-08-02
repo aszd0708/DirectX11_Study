@@ -35,7 +35,7 @@ void Terrain::Render(shared_ptr<Shader> customShader)
 		}
 
 		MaterialDesc material; // diffuse 기본값 (1,1,1,1)
-		material.ambient = Vec4(1.0f);
+		material.albedo = Vec4(1.0f);
 		activateShader->PushMaterialData(material);
 
 		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);

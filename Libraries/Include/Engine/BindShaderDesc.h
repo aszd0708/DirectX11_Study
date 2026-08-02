@@ -47,11 +47,25 @@ struct LightDesc
 };
 
 struct MaterialDesc
-{
-	Color ambient = Color(0.f, 0.f, 0.f, 1.f);
-	Color diffuse = Color(1.f, 1.f, 1.f, 1.f);
-	Color specular = Color(0.f, 0.f, 0.f, 1.f);
-	Color emissive = Color(0.f, 0.f, 0.f, 1.f);
+{	
+	// 색상 관련
+	Color albedo = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Color emissive = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+	// PBR
+	float metallic = 0.0f; // 0.0(비금속) ~ 1.0(금속)
+	float roughness = 0.f; // 0.0(매끄러움) ~ 1.0(거침)
+	float ao = 1.f;        // 1.0(차폐 안됨) ~ 0.0(완전 차폐됨)
+	int padding0;
+
+	// 텍스처 존재 여부 플래그
+	int hasBaseColorMap;
+	int hasNormalMap;
+	int hasMetallicMap;
+	int hasRoughnessMap;
+
+	int hasAOMap;
+	Vec3 padding1;
 };
 
 // Bone

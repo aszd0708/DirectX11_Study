@@ -56,7 +56,7 @@ float4 PS(SSAOMeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadowSpot(input.worldPosition, LightVP, normal);
+    float shadow = CalculateShadowPoint(input.worldPosition, LightVP, normal);
     
     return float4(color.rgb * shadow, input.linearDepth);
 }
@@ -74,7 +74,7 @@ float4 PS_OnlyShadow(SSAOMeshOutput input) : SV_TARGET
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float shadow = CalculateShadowSpot(input.worldPosition, LightVP, input.normal);
+    float shadow = CalculateShadowPoint(input.worldPosition, LightVP, input.normal);
     
     return float4(shadow, shadow, shadow, input.linearDepth);
 }

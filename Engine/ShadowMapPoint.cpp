@@ -49,9 +49,10 @@ void ShadowMapPoint::CreateShaderMapTexture(float width, float height)
 	desc.Usage = D3D11_USAGE_DEFAULT;
 	desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
+	desc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
-	DEVICE->CreateTexture2D(&desc, nullptr, _shaderMapTexture.GetAddressOf());
+	HRESULT hr = DEVICE->CreateTexture2D(&desc, nullptr, _shaderMapTexture.GetAddressOf());
+	CHECK(hr);
 }
 
 void ShadowMapPoint::CreateDepthStencilView()
@@ -69,7 +70,7 @@ void ShadowMapPoint::CreateDepthStencilView()
 		desc.Texture2DArray.ArraySize = 1;
 
 		HRESULT hr = DEVICE->CreateDepthStencilView(_shaderMapTexture.Get(), &desc, _dsvs[i].GetAddressOf());
-		assert(SUCCEEDED(hr));
+		CHECK(hr);
 	}
 }
 
@@ -79,13 +80,14 @@ void ShadowMapPoint::CreateShaderResourceView()
 	ZeroMemory(&desc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
 
 	desc.Format = DXGI_FORMAT_R32_FLOAT;
-	desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
+	desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
 	desc.Texture2DArray.ArraySize = MAX_TEXTURE_COUNT;
 	desc.Texture2DArray.FirstArraySlice = 0;
 	desc.Texture2DArray.MipLevels = 1;
 	desc.Texture2DArray.MostDetailedMip = 0;
 
-	DEVICE->CreateShaderResourceView(_shaderMapTexture.Get(), &desc, _srv.GetAddressOf());
+	HRESULT hr2 = DEVICE->CreateShaderResourceView(_shaderMapTexture.Get(), &desc, _srv.GetAddressOf());
+	CHECK(hr2);
 
 	// ImGUI 디버깅 용
 	D3D11_SHADER_RESOURCE_VIEW_DESC layerSrvDesc = {};

@@ -51,24 +51,6 @@
     <ClCompile Include="CameraScript.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
-    <ClCompile Include="SceneDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="RawBufferDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="GroupDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="TextureBufferDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="StructuredBufferDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="ViewportDemo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="SSAODemo.cpp">
       <Filter>Game\Demo</Filter>
     </ClCompile>
@@ -87,6 +69,12 @@
     <ClCompile Include="ShadowSpotDemo.cpp">
       <Filter>Game\Demo</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowPointDemo.cpp">
+      <Filter>Game\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="PBRSphereDemo.cpp">
+      <Filter>Game\Demo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -97,24 +85,6 @@
     </ClInclude>
     <ClInclude Include="CameraScript.h">
       <Filter>Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneDemo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="RawBufferDemo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="GroupDemo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="TextureBufferDemo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="StructuredBufferDemo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="ViewportDemo.h">
-      <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="SSAODemo.h">
       <Filter>Game\Demo</Filter>
@@ -132,6 +102,12 @@
       <Filter>Game\Demo</Filter>
     </ClInclude>
     <ClInclude Include="ShadowSpotDemo.h">
+      <Filter>Game\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowPointDemo.h">
+      <Filter>Game\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="PBRSphereDemo.h">
       <Filter>Game\Demo</Filter>
     </ClInclude>
   </ItemGroup>
@@ -239,6 +215,12 @@
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\ShadowMapDemo.fx">
+      <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\00. PBR.fx">
+      <Filter>Shaders\Common</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\PBRMeshDemo.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
   </ItemGroup>

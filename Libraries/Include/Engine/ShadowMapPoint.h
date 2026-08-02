@@ -4,6 +4,8 @@ class ShadowMapPoint : public ShadowMapBase
 {
 public:
 	static const uint32 MAX_TEXTURE_COUNT = 6;
+	static constexpr Vec3 UP_VECTOR[MAX_TEXTURE_COUNT]{ Vec3(0, 1, 0) , Vec3(0, 1, 0), Vec3(0, 0, -1), Vec3(0, 0, 1), Vec3(0, 1, 0), Vec3(0, 1, 0)};
+	static constexpr Vec3 LOOK_VECTOR[MAX_TEXTURE_COUNT]{ Vec3(1, 0, 0) , Vec3(-1, 0, 0), Vec3(0, 1, 0), Vec3(0, -1, 0), Vec3(0, 0, 1), Vec3(0, 0, -1)};
 
 public:
 	ShadowMapPoint(uint32 width, uint32 height);

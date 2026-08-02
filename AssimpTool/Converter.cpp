@@ -270,33 +270,70 @@ void Converter::ReadMaterialData()
 		shared_ptr<asMaterial> material = make_shared<asMaterial>();
 		material->name = srcMaterial->GetName().C_Str();
 
-		aiColor3D color;
-		// Ambient
-		srcMaterial->Get(AI_MATKEY_COLOR_AMBIENT, color);
-		material->ambient = Color(color.r, color.b, color.b, 1);
-		// Diffuse
-		srcMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-		material->diffuse = Color(color.r, color.b, color.b, 1);
-		// Specular
-		srcMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color);
-		material->specular = Color(color.r, color.b, color.b, 1);
+		// BaseColor
+		{
+			aiColor3D baseColor;
+			srcMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, baseColor);
+			material->baseColor = Color(baseColor.r, baseColor.b, baseColor.b, 1);
+		}
+
+		// Metallic
+		{
+			float metallic = 0.0f;
+			srcMaterial->Get(AI_MATKEY_METALLIC_FACTOR, metallic);
+			material->metallic = metallic;
+		}
+
+		// Roughness
+		{
+			float roughness = 0.0f;
+			srcMaterial->Get(AI_MATKEY_ROUGHNESS_FACTOR, roughness);
+			material->roughness = roughness;
+		}
+
 		// Emissive
-		srcMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, color);
-		material->emissive = Color(color.r, color.b, color.b, 1);
+		{
+			aiColor3D emissive;
+			srcMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, emissive);
+			material->emissive = Color(emissive.r, emissive.b, emissive.b, 1);
+		}
+		
 
-		aiString file;
 
-		// Diffuse Texture
-		srcMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &file);
-		material->diffuseFile = file.C_Str();
+		// BaseColorMap Texture
+		{
+			aiString baseColorFile;
+			srcMaterial->GetTexture(aiTextureType_BASE_COLOR, 0, &baseColorFile);
+			material->baseColorMapFile = baseColorFile.C_Str();
+		}
 
-		// Specular Texture
-		srcMaterial->GetTexture(aiTextureType_SPECULAR, 0, &file);
-		material->specularFile = file.C_Str();
+		// NormalMap Texture
+		{
+			aiString normalMapFile;
+			srcMaterial->GetTexture(aiTextureType_NORMALS, 0, &normalMapFile);
+			material->normalMapFile = normalMapFile.C_Str();
+		}
 
-		// Normal Texture
-		srcMaterial->GetTexture(aiTextureType_NORMALS, 0, &file);
-		material->normalFile = file.C_Str();
+		// MetallicMap Texture
+		{
+			aiString metallicMapFile;
+			srcMaterial->GetTexture(aiTextureType_METALNESS, 0, &metallicMapFile);
+			material->metallicMapFile = metallicMapFile.C_Str();
+		}
+
+		// RoughnessMap Texture
+		{
+			aiString roughnessMapFile;
+			srcMaterial->GetTexture(aiTextureType_DIFFUSE_ROUGHNESS, 0, &roughnessMapFile);
+			material->roughnessMapFile = roughnessMapFile.C_Str();
+		}
+
+		// EmissiveMap Texture
+		{
+			aiString emissiveMapFile;
+			srcMaterial->GetTexture(aiTextureType_EMISSIVE, 0, &emissiveMapFile);
+			material->emissiveMapFile = emissiveMapFile.C_Str();
+		}
 
 		_materials.emplace_back(material);
 	}
@@ -330,40 +367,40 @@ void Converter::WriteMaterialData(wstring finalPath)
 		element->SetText(material->name.c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("DiffuseFile");
-		element->SetText(WriteTexture(folder, material->diffuseFile).c_str());
+		element = document->NewElement("BaseColorFile");
+		element->SetText(WriteTexture(folder, material->baseColorMapFile).c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("SpecularFile");
-		element->SetText(WriteTexture(folder, material->specularFile).c_str());
+		element = document->NewElement("NormalMapFile");
+		element->SetText(WriteTexture(folder, material->normalMapFile).c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("NormalFile");
-		element->SetText(WriteTexture(folder, material->normalFile).c_str());
+		element = document->NewElement("MetallicMapFile");
+		element->SetText(WriteTexture(folder, material->metallicMapFile).c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("Ambient");
-		element->SetAttribute("R", material->ambient.x);
-		element->SetAttribute("G", material->ambient.y);
-		element->SetAttribute("B", material->ambient.z);
-		element->SetAttribute("A", material->ambient.w);
+		element = document->NewElement("RoughnessMapFile");
+		element->SetText(WriteTexture(folder, material->roughnessMapFile).c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("Diffuse");
-		element->SetAttribute("R", material->diffuse.x);
-		element->SetAttribute("G", material->diffuse.y);
-		element->SetAttribute("B", material->diffuse.z);
-		element->SetAttribute("A", material->diffuse.w);
+		element = document->NewElement("EmissiveMapFile");
+		element->SetText(WriteTexture(folder, material->emissiveMapFile).c_str());
 		node->LinkEndChild(element);
 
-		element = document->NewElement("Specular");
-		element->SetAttribute("R", material->specular.x);
-		element->SetAttribute("G", material->specular.y);
-		element->SetAttribute("B", material->specular.z);
-		element->SetAttribute("A", material->specular.w);
+		element = document->NewElement("BaseColor");
+		element->SetAttribute("R", material->baseColor.x);
+		element->SetAttribute("G", material->baseColor.y);
+		element->SetAttribute("B", material->baseColor.z);
+		element->SetAttribute("A", material->baseColor.w);
 		node->LinkEndChild(element);
 
-		element = document->NewElement("Emissive");
+		element = document->NewElement("Metallic");
+		element->SetAttribute("Value", material->metallic);
+
+		element = document->NewElement("Roughness");
+		element->SetAttribute("Value", material->roughness);
+
+		element = document->NewElement("Eemissive");
 		element->SetAttribute("R", material->emissive.x);
 		element->SetAttribute("G", material->emissive.y);
 		element->SetAttribute("B", material->emissive.z);

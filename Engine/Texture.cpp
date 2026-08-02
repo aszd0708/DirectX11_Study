@@ -17,6 +17,12 @@ void Texture::Load(const wstring& path)
 	HRESULT hr = ::LoadFromWICFile(path.c_str(), WIC_FLAGS_NONE, &md, _img);
 	CHECK(hr);
 
+	if (_isSRGB)
+	{
+		md.format = DirectX::MakeSRGB(md.format);
+		_img.OverrideFormat(md.format);
+	}
+
 	hr = ::CreateShaderResourceView(DEVICE.Get(), _img.GetImages(), _img.GetImageCount(), md, _shaderResourveView.GetAddressOf());
 	CHECK(hr);
 	

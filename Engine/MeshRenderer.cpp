@@ -16,6 +16,35 @@ MeshRenderer::~MeshRenderer()
 
 }
 
+void MeshRenderer::Render()
+{
+	if (_mesh == nullptr || _material == nullptr) return;
+
+	shared_ptr<Shader> shader = _material->GetShader();
+	if (shader == nullptr) return;
+
+	// Global Data
+	shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+
+	// Light
+	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+	if (lightObj != nullptr)
+	{
+		shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+	}
+
+	_material->Update();
+
+	Matrix world = GetTransform()->GetWorldMatrix();
+	shader->PushTransformData(TransformDesc{ world });
+
+	// IA
+	_mesh->GetVertexBuffer()->PushData();
+	_mesh->GetIndexBuffer()->PushData();
+
+	shader->DrawIndexed(0, _pass, _mesh->GetIndexBuffer()->GetCount());
+}
+
 void MeshRenderer::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer)
 {
 	if(_mesh == nullptr || _material == nullptr) return;

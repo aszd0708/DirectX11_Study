@@ -10,7 +10,7 @@ void ResourceManager::Init()
 	CreateDefaultMesh();
 }
 
-shared_ptr<Texture> ResourceManager::GetOrAddTexture(const wstring& key, const wstring& path)
+shared_ptr<Texture> ResourceManager::GetOrAddTexture(const wstring& key, const wstring& path, const bool isSRGB)
 {
 	shared_ptr<Texture> texture = Get<Texture>(key);
 
@@ -22,6 +22,7 @@ shared_ptr<Texture> ResourceManager::GetOrAddTexture(const wstring& key, const w
 	if (texture == nullptr)
 	{
 		texture = make_shared<Texture>();
+		texture->SetSRGB(isSRGB);
 		texture->Load(path);
 		Add(key, texture);
 	}

@@ -22,7 +22,7 @@ public:
 	template<typename T>
 	shared_ptr<T> Get(const wstring& key);
 
-	shared_ptr<Texture> GetOrAddTexture(const wstring& key, const wstring& path);
+	shared_ptr<Texture> GetOrAddTexture(const wstring& key, const wstring& path, const bool isSRGB = false);
 
 	template<typename T>
 	ResourceType GetResourceType();

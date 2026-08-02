@@ -14,9 +14,10 @@ void Material::SetShader(shared_ptr<Shader> shader)
 {
 	_shader = shader;
 
-	_diffuseEffectBuffer = shader->GetSRV("DiffuseMap");
+	_baseColorBuffer = shader->GetSRV("BaseColorMap");
 	_normalEffectBuffer = shader->GetSRV("NormalMap");
-	_specularEffectBuffer = shader->GetSRV("SpecularMap");
+	_metallicBuffer = shader->GetSRV("MetallicMap");
+	_roughnessBuffer = shader->GetSRV("RoughnessMap");
 }
 
 void Material::Update()
@@ -28,9 +29,10 @@ void Material::Update()
 
 	_shader->PushMaterialData(_desc);
 
-	if (_diffuseMap)
+
+	if (_baseColorMap)
 	{
-		_diffuseEffectBuffer->SetResource(_diffuseMap->GetComPtr().Get());
+		_baseColorBuffer->SetResource(_baseColorMap->GetComPtr().Get());
 	}
 
 	if (_normalMap)
@@ -38,9 +40,14 @@ void Material::Update()
 		_normalEffectBuffer->SetResource(_normalMap->GetComPtr().Get());
 	}
 
-	if (_specularMap)
+	if (_metallicMap)
 	{
-		_specularEffectBuffer->SetResource(_specularMap->GetComPtr().Get());
+		_metallicBuffer->SetResource(_metallicMap->GetComPtr().Get());
+	}
+
+	if (_roughnessMap)
+	{
+		_roughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
 	}
 }
 
@@ -50,12 +57,14 @@ shared_ptr<Material> Material::Clone()
 
 	material->_desc = _desc;
 	material->_shader = _shader;
-	material->_diffuseMap = _diffuseMap;
+	material->_baseColorMap = _baseColorMap;
 	material->_normalMap = _normalMap;
-	material->_specularMap = _specularMap;
-	material->_diffuseEffectBuffer = _diffuseEffectBuffer;
+	material->_metallicMap = _metallicMap;
+	material->_roughnessMap = _roughnessMap;
+	material->_baseColorBuffer = _baseColorBuffer;
 	material->_normalEffectBuffer = _normalEffectBuffer;
-	material->_specularEffectBuffer = _specularEffectBuffer;
+	material->_metallicBuffer = _metallicBuffer;
+	material->_roughnessBuffer = _roughnessBuffer;
 
 	return material;
 }
