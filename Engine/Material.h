@@ -62,5 +62,6 @@ private:
 	ComPtr<ID3DX11EffectShaderResourceVariable> _normalEffectBuffer;
 	ComPtr<ID3DX11EffectShaderResourceVariable> _metallicBuffer;
 	ComPtr<ID3DX11EffectShaderResourceVariable> _roughnessBuffer;
+	ComPtr<ID3DX11EffectShaderResourceVariable> _metallicRoughnessBuffer;
 };
 

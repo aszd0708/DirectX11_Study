@@ -40,6 +40,18 @@
     <Filter Include="Game\Material">
       <UniqueIdentifier>{5c587bd2-cf25-4c85-a30d-11f6cf1a513c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Demo\PBR">
+      <UniqueIdentifier>{aa9d6380-3985-47bf-a273-53b80c6f5713}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Demo\Shadow">
+      <UniqueIdentifier>{71f1a3df-7295-424d-94fb-d48a313f5e96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Demo\AO">
+      <UniqueIdentifier>{24d2a1fd-a3c1-4662-ad44-c5906093c4c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Demo\PBR">
+      <UniqueIdentifier>{20b41b92-55bd-411a-be63-8ba27c42bc14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -51,9 +63,6 @@
     <ClCompile Include="CameraScript.cpp">
       <Filter>Camera</Filter>
     </ClCompile>
-    <ClCompile Include="SSAODemo.cpp">
-      <Filter>Game\Demo</Filter>
-    </ClCompile>
     <ClCompile Include="07. HeightMapDemo.cpp">
       <Filter>Game</Filter>
     </ClCompile>
@@ -63,17 +72,23 @@
     <ClCompile Include="RenderObject.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowDemo.cpp">
-      <Filter>Game\Demo</Filter>
+    <ClCompile Include="PBRSphereDemo.cpp">
+      <Filter>Game\Demo\PBR</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowSpotDemo.cpp">
-      <Filter>Game\Demo</Filter>
+    <ClCompile Include="ShadowDemo.cpp">
+      <Filter>Game\Demo\Shadow</Filter>
     </ClCompile>
     <ClCompile Include="ShadowPointDemo.cpp">
-      <Filter>Game\Demo</Filter>
+      <Filter>Game\Demo\Shadow</Filter>
     </ClCompile>
-    <ClCompile Include="PBRSphereDemo.cpp">
-      <Filter>Game\Demo</Filter>
+    <ClCompile Include="ShadowSpotDemo.cpp">
+      <Filter>Game\Demo\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="SSAODemo.cpp">
+      <Filter>Game\Demo\AO</Filter>
+    </ClCompile>
+    <ClCompile Include="PBRModelDemo.cpp">
+      <Filter>Game\Demo\PBR</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -86,9 +101,6 @@
     <ClInclude Include="CameraScript.h">
       <Filter>Camera</Filter>
     </ClInclude>
-    <ClInclude Include="SSAODemo.h">
-      <Filter>Game\Demo</Filter>
-    </ClInclude>
     <ClInclude Include="07. HeightMapDemo.h">
       <Filter>Game</Filter>
     </ClInclude>
@@ -98,17 +110,23 @@
     <ClInclude Include="RenderObject.h">
       <Filter>Game\GameObject</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowDemo.h">
-      <Filter>Game\Demo</Filter>
+    <ClInclude Include="PBRSphereDemo.h">
+      <Filter>Game\Demo\PBR</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowSpotDemo.h">
-      <Filter>Game\Demo</Filter>
+    <ClInclude Include="ShadowDemo.h">
+      <Filter>Game\Demo\Shadow</Filter>
     </ClInclude>
     <ClInclude Include="ShadowPointDemo.h">
-      <Filter>Game\Demo</Filter>
+      <Filter>Game\Demo\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="PBRSphereDemo.h">
-      <Filter>Game\Demo</Filter>
+    <ClInclude Include="ShadowSpotDemo.h">
+      <Filter>Game\Demo\Shadow</Filter>
+    </ClInclude>
+    <ClInclude Include="SSAODemo.h">
+      <Filter>Game\Demo\AO</Filter>
+    </ClInclude>
+    <ClInclude Include="PBRModelDemo.h">
+      <Filter>Game\Demo\PBR</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -217,10 +235,16 @@
     <FxCompile Include="..\Shaders\ShadowMapDemo.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shaders\PBRMeshDemo.fx">
+      <Filter>Shaders\Demo\PBR</Filter>
+    </FxCompile>
     <FxCompile Include="..\Shaders\00. PBR.fx">
       <Filter>Shaders\Common</Filter>
     </FxCompile>
-    <FxCompile Include="..\Shaders\PBRMeshDemo.fx">
+    <FxCompile Include="..\Shaders\PBRModelDemo.fx">
+      <Filter>Shaders\Demo\PBR</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\SkyBox.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
   </ItemGroup>

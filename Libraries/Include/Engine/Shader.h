@@ -62,6 +62,7 @@ public:
 	void PushMaterialData(const MaterialDesc& desc);
 	void PushBoneData(const BoneDesc& desc);
 	void PushKeyframeData(const KeyframeDesc& desc);
+	void PushTweenData(const TweenDesc& desc);
 	void PushTweenData(const InstancedTweenDesc& desc);
 
 private:
@@ -89,9 +90,13 @@ private:
 	shared_ptr<ConstantBuffer<KeyframeDesc>> _keyframeBuffer;
 	ComPtr<ID3DX11EffectConstantBuffer> _keyframeEffectBuffer;
 
-	InstancedTweenDesc _tweenDesc;
-	shared_ptr<ConstantBuffer<InstancedTweenDesc>> _tweenBuffer;
+	TweenDesc _tweenDesc;
+	shared_ptr<ConstantBuffer<TweenDesc>> _tweenBuffer;
 	ComPtr<ID3DX11EffectConstantBuffer> _tweenEffectBuffer;
+
+	InstancedTweenDesc _instanceTweenDesc;
+	shared_ptr<ConstantBuffer<InstancedTweenDesc>> _instnaceTweenBuffer;
+	ComPtr<ID3DX11EffectConstantBuffer> _instanceTweenEffectBuffer;
 };
 
 class ShaderManager

@@ -44,7 +44,6 @@ void AssimpTool::Init()
 		converter->ExportMaterialData(L"StanfordBunny/StanfordBunny");
 		converter->ExportModelData(L"StanfordBunny/StanfordBunny");
 	}
-	*/
 
 	{
 		shared_ptr<Converter> converter = make_shared<Converter>();
@@ -52,6 +51,14 @@ void AssimpTool::Init()
 		converter->ReadAssetFile(L"Wall/Wall.obj");
 		converter->ExportMaterialData(L"Wall/Wall");
 		converter->ExportModelData(L"Wall/Wall");
+	}
+	*/
+	{
+		shared_ptr<Converter> converter = make_shared<Converter>();
+
+		converter->ReadAssetFile(L"FreeDroid/scene.gltf");
+		converter->ExportMaterialData(L"FreeDroid");
+		converter->ExportModelData(L"FreeDroid");
 	}
 }
 

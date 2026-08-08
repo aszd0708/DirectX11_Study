@@ -16,8 +16,11 @@ void Material::SetShader(shared_ptr<Shader> shader)
 
 	_baseColorBuffer = shader->GetSRV("BaseColorMap");
 	_normalEffectBuffer = shader->GetSRV("NormalMap");
+	/*
 	_metallicBuffer = shader->GetSRV("MetallicMap");
 	_roughnessBuffer = shader->GetSRV("RoughnessMap");
+	*/
+	_metallicRoughnessBuffer = shader->GetSRV("MetallicRoughnessMap");
 }
 
 void Material::Update()
@@ -42,12 +45,12 @@ void Material::Update()
 
 	if (_metallicMap)
 	{
-		_metallicBuffer->SetResource(_metallicMap->GetComPtr().Get());
+		_metallicRoughnessBuffer->SetResource(_metallicMap->GetComPtr().Get());
 	}
 
 	if (_roughnessMap)
 	{
-		_roughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
+		_metallicRoughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
 	}
 }
 

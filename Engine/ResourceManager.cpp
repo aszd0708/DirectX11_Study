@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "Mesh.h"
+#include "Utils.h"
 #include <filesystem>
 
 void ResourceManager::Init()

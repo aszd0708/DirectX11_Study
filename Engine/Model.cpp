@@ -37,6 +37,11 @@ void Model::ReadMaterial(wstring filename)
 		tinyxml2::XMLElement* node = nullptr;
 
 		node = materialNode->FirstChildElement();
+		if (node->GetText() == nullptr)
+		{
+			materialNode = materialNode->NextSiblingElement();
+			continue;
+		}
 		material->SetName(Utils::ToWString(node->GetText()));
 
 		// BaseColor Texture
@@ -86,56 +91,6 @@ void Model::ReadMaterial(wstring filename)
 				material->SetRoughnessMap(texture);
 			}
 		}
-
-		/*
-		// Ambient
-		{
-			node = node->NextSiblingElement();
-
-			Color color;
-			color.x = node->FloatAttribute("R");
-			color.y = node->FloatAttribute("G");
-			color.z = node->FloatAttribute("B");
-			color.w = node->FloatAttribute("A");
-			material->GetMaterialDesc().ambient = color;
-		}
-
-		// Diffuse
-		{
-			node = node->NextSiblingElement();
-
-			Color color;
-			color.x = node->FloatAttribute("R");
-			color.y = node->FloatAttribute("G");
-			color.z = node->FloatAttribute("B");
-			color.w = node->FloatAttribute("A");
-			material->GetMaterialDesc().diffuse = color;
-		}
-
-		// Specular
-		{
-			node = node->NextSiblingElement();
-
-			Color color;
-			color.x = node->FloatAttribute("R");
-			color.y = node->FloatAttribute("G");
-			color.z = node->FloatAttribute("B");
-			color.w = node->FloatAttribute("A");
-			material->GetMaterialDesc().specular = color;
-		}
-
-		// Emissive
-		{
-			node = node->NextSiblingElement();
-
-			Color color;
-			color.x = node->FloatAttribute("R");
-			color.y = node->FloatAttribute("G");
-			color.z = node->FloatAttribute("B");
-			color.w = node->FloatAttribute("A");
-			material->GetMaterialDesc().emissive = color;
-		}
-		*/
 
 		_materials.push_back(material);
 

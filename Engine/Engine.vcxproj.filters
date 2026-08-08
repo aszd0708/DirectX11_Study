@@ -46,6 +46,15 @@
     <Filter Include="01. Graphics\Shadow">
       <UniqueIdentifier>{0765aae6-9b99-4ffd-aa06-b94c8090e742}</UniqueIdentifier>
     </Filter>
+    <Filter Include="98. Utils\STB">
+      <UniqueIdentifier>{8f01d558-d0b7-45cd-85aa-250b5027b398}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Graphics\Environment">
+      <UniqueIdentifier>{e0327794-cb5f-4451-bf67-e40a2333da17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99. Shaders">
+      <UniqueIdentifier>{dbf2d8dd-4c95-4f56-a03d-151b3aabf516}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -252,6 +261,15 @@
     <ClInclude Include="ShadowMapPoint.h">
       <Filter>01. Graphics\Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="stb_image.h">
+      <Filter>98. Utils\STB</Filter>
+    </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>01. Graphics\Environment</Filter>
+    </ClInclude>
+    <ClInclude Include="IBLManager.h">
+      <Filter>02. Managers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -446,10 +464,34 @@
     <ClCompile Include="ShadowMapPoint.cpp">
       <Filter>01. Graphics\Shadow</Filter>
     </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>98. Utils\STB</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>01. Graphics\Environment</Filter>
+    </ClCompile>
+    <ClCompile Include="IBLManager.cpp">
+      <Filter>02. Managers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
       <Filter>98. Utils</Filter>
+    </None>
+    <None Include="..\Shaders\BRDF.fx">
+      <Filter>99. Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\Prefiltered.fx">
+      <Filter>99. Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\Util.fx">
+      <Filter>99. Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\EquiToCube.fx">
+      <Filter>99. Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\Irradiance.fx">
+      <Filter>99. Shaders</Filter>
     </None>
   </ItemGroup>
 </Project>

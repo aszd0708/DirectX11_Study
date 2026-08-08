@@ -11,14 +11,19 @@ public:
 	ComPtr<ID3D11ShaderResourceView> GetComPtr() { return _shaderResourveView; }
 
 	virtual void Load(const wstring& path) override;
+	void LoadHDR(const wstring& path);
 
+	void SetTexture(ComPtr<ID3D11Texture2D> tex2D, ComPtr<ID3D11ShaderResourceView> srv);
 	ComPtr<ID3D11Texture2D> GetTexture2D();
 
+	void CreateCubeMap(UINT resolution, DXGI_FORMAT format, UINT mipLevels);
+
+	ComPtr<ID3D11ShaderResourceView> GetSRV() { return _shaderResourveView; };
 	void SetSRV(ComPtr<ID3D11ShaderResourceView> srv) { _shaderResourveView = srv; };
 
 	Vec2 GetSize() { return _size; }
 
-	const DirectX::ScratchImage& GetInfo() { return _img; }
+	DirectX::ScratchImage& GetInfo() { return _img; }
 
 	void SetSRGB(const bool& isSRGB) { _isSRGB = isSRGB; }
 

@@ -41,6 +41,9 @@ using namespace Microsoft::WRL;
 #include <Assimp/scene.h>
 #include <Assimp/postprocess.h>
 
+// STB
+#include "stb_image.h"
+
 #include <FX11/d3dx11effect.h>
 
 // Libs

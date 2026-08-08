@@ -22,6 +22,7 @@
     <ClInclude Include="07. HeightMapDemo.h" />
     <ClInclude Include="CameraScript.h" />
     <ClInclude Include="Main.h" />
+    <ClInclude Include="PBRModelDemo.h" />
     <ClInclude Include="PBRSphereDemo.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RenderObject.h" />
@@ -35,6 +36,7 @@
     <ClCompile Include="07. HeightMapDemo.cpp" />
     <ClCompile Include="CameraScript.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PBRModelDemo.cpp" />
     <ClCompile Include="PBRSphereDemo.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -90,7 +92,9 @@
     <FxCompile Include="..\Shaders\DefaultMeshForDemo.fx" />
     <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx" />
     <FxCompile Include="..\Shaders\PBRMeshDemo.fx" />
+    <FxCompile Include="..\Shaders\PBRModelDemo.fx" />
     <FxCompile Include="..\Shaders\ShadowMapDemo.fx" />
+    <FxCompile Include="..\Shaders\SkyBox.fx" />
     <FxCompile Include="..\Shaders\SSAODemo.fx" />
     <FxCompile Include="..\Shaders\TerrainForDemo.fx" />
   </ItemGroup>

@@ -16,6 +16,7 @@ void SkyDemo::Init()
 	RESOURCES->Init();
 	_shader = make_shared<Shader>(L"18. SkyDemo.fx");
 
+	/*
 	// Material
 	{
 		shared_ptr<Material> material = make_shared<Material>();
@@ -28,7 +29,7 @@ void SkyDemo::Init()
 		desc.specular = Vec4(1.f);
 		RESOURCES->Add(L"Sky", material);
 	}
-
+	*/
 	{
 		// Object
 		_obj = make_shared<GameObject>();

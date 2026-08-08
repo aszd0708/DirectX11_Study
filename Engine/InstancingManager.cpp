@@ -153,8 +153,6 @@ void InstancingManager::RenderAnimRenderer(vector<shared_ptr<GameObject>>& gameO
 				TweenDesc& desc = gameObject->GetModelAnimator()->GetTweenDesc();
 				tweenDesc->tweens[i] = desc;
 			}
-
-			//RENDER->PushTweenData(*tweenDesc.get());
 			
 
 			// 마지막 그림.

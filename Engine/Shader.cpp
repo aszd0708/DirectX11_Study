@@ -40,14 +40,17 @@ void Shader::CreateEffect()
 			pass.pass->GetVertexShaderDesc(&pass.passVsDesc);
 			pass.passVsDesc.pShaderVariable->GetShaderDesc(pass.passVsDesc.ShaderIndex, &pass.effectVsDesc);
 
-			for (UINT s = 0; s < pass.effectVsDesc.NumInputSignatureEntries; s++)
+			if (pass.passVsDesc.pShaderVariable->IsValid())
 			{
-				D3D11_SIGNATURE_PARAMETER_DESC desc;
+				for (UINT s = 0; s < pass.effectVsDesc.NumInputSignatureEntries; s++)
+				{
+					D3D11_SIGNATURE_PARAMETER_DESC desc;
 
-				HRESULT hr = pass.passVsDesc.pShaderVariable->GetInputSignatureElementDesc(pass.passVsDesc.ShaderIndex, s, &desc);
-				CHECK(hr);
+					HRESULT hr = pass.passVsDesc.pShaderVariable->GetInputSignatureElementDesc(pass.passVsDesc.ShaderIndex, s, &desc);
+					CHECK(hr);
 
-				pass.signatureDescs.push_back(desc);
+					pass.signatureDescs.push_back(desc);
+				}
 			}
 
 			pass.inputLayout = CreateInputLayout(_shaderDesc.blob, &pass.effectVsDesc, pass.signatureDescs);
@@ -395,11 +398,11 @@ void Shader::PushKeyframeData(const KeyframeDesc& desc)
 	_keyframeEffectBuffer->SetConstantBuffer(_keyframeBuffer->GetComPtr().Get());
 }
 
-void Shader::PushTweenData(const InstancedTweenDesc& desc)
+void Shader::PushTweenData(const TweenDesc& desc)
 {
-	if (_transformEffectBuffer == nullptr)
+	if (_tweenEffectBuffer == nullptr)
 	{
-		_tweenBuffer = make_shared<ConstantBuffer<InstancedTweenDesc>>();
+		_tweenBuffer = make_shared<ConstantBuffer<TweenDesc>>();
 		_tweenBuffer->Create();
 		_tweenEffectBuffer = GetConstantBuffer("TweenBuffer");
 	}
@@ -407,4 +410,18 @@ void Shader::PushTweenData(const InstancedTweenDesc& desc)
 	_tweenDesc = desc;
 	_tweenBuffer->CopyData(_tweenDesc);
 	_tweenEffectBuffer->SetConstantBuffer(_tweenBuffer->GetComPtr().Get());
+}
+
+void Shader::PushTweenData(const InstancedTweenDesc& desc)
+{
+	if (_instanceTweenEffectBuffer == nullptr)
+	{
+		_instnaceTweenBuffer = make_shared<ConstantBuffer<InstancedTweenDesc>>();
+		_instnaceTweenBuffer->Create();
+		_instanceTweenEffectBuffer = GetConstantBuffer("TweenBuffer");
+	}
+
+	_instanceTweenDesc = desc;
+	_instnaceTweenBuffer->CopyData(_instanceTweenDesc);
+	_instanceTweenEffectBuffer->SetConstantBuffer(_instnaceTweenBuffer->GetComPtr().Get());
 }

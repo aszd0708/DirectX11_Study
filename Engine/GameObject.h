@@ -31,9 +31,9 @@ public:
 	shared_ptr<BaseCollider> GetCollider();
 
 	template <typename T>
-	shared_ptr<T> GetComponent(T)
+	shared_ptr<T> GetComponent()
 	{
-		for (const shared_ptr<MonoBehaviour>& script : _scripts)
+		for (const shared_ptr<Component>& script : _scripts)
 		{
 			shared_ptr<T> casted = dynamic_pointer_cast<T>(script);
 
@@ -41,9 +41,9 @@ public:
 			{
 				return casted;
 			}
-
-			return nullptr;
 		}
+
+		return nullptr;
 	}
 
 	shared_ptr<Transform> GetOrAddTransform();

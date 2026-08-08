@@ -87,6 +87,64 @@ void ModelAnimator::UpdateTweenData()
 	}
 }
 
+void ModelAnimator::Render()
+{
+	if (_model == nullptr)
+		return;
+	if (_texture == nullptr)
+	{
+		CreateTexture();
+	}
+
+	// Global Data
+	_shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+
+	// Light
+	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+	if (lightObj != nullptr)
+	{
+		_shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+	}
+
+	// SRV를 통해 정보 전달
+	_shader->GetSRV("TransformMap")->SetResource(_srv.Get());
+
+	// Bones
+	BoneDesc boneDesc;
+	const uint32 boneCount = _model->GetBoneCount();
+
+	for (uint32 i = 0; i < boneCount; ++i)
+	{
+		shared_ptr<ModelBone> bone = _model->GetBoneByIndex(i);
+		boneDesc.transforms[i] = bone->transform;
+	}
+	_shader->PushBoneData(boneDesc);
+
+	// Transform
+	auto world = GetTransform()->GetWorldMatrix();
+	_shader->PushTransformData(TransformDesc{ world });
+
+	UpdateTweenData();
+	_shader->PushTweenData(_tweenDesc);
+
+	const vector<shared_ptr<ModelMesh>>& meshes = _model->GetMeshes();
+	for (auto& mesh : meshes)
+	{
+		if (mesh->material)
+		{
+			mesh->material->Update();
+		}
+
+		// BoneIndex
+		_shader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
+
+		mesh->vertexBuffer->PushData();
+		mesh->indexBuffer->PushData();
+
+		_shader->DrawIndexed(0, _pass, mesh->indexBuffer->GetCount());
+	}
+}
+
 void ModelAnimator::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer)
 {
 	if (_model == nullptr)
