@@ -75,22 +75,22 @@ void PBRModelDemo::Update()
 		_skyObjs[_skyBoxIndex]->Update();
 	}
 
-	shared_ptr<ModelAnimator> modelRenderer = _modelObj->GetModelAnimator();
+	shared_ptr<ModelRenderer> modelRenderer = _modelObj->GetModelRenderer();
 	{
 		ImGui::SliderInt("Pass", &_pass, 0, 5);
 		ImGui::SliderInt("SkyBox", &_skyBoxIndex, 0, _skyObjs.size() - 1);
 
-		modelRenderer->GetTweenDesc().next.animIndex = _animationIndex;
-		ImGui::SliderInt("Animation", &_animationIndex, 0, 2);
+		//modelRenderer->GetTweenDesc().next.animIndex = _animationIndex;
+		//ImGui::SliderInt("Animation", &_animationIndex, 0, 2);
 	}
-	_modelObj->GetModelAnimator()->Update();
-	_modelObj->GetModelAnimator()->UpdateTweenData();
-
+	//_modelObj->GetModelAnimator()->Update();
+	//_modelObj->GetModelAnimator()->UpdateTweenData();
+   
 }
 
 void PBRModelDemo::Render()
 {
-	shared_ptr<ModelAnimator> modelRenderer = _modelObj->GetModelAnimator();
+	shared_ptr<ModelRenderer> modelRenderer = _modelObj->GetModelRenderer();
 	modelRenderer->SetPass(_pass);
 
 	shared_ptr<Environment> env = _skyObjs[_skyBoxIndex]->GetComponent<Environment>();
@@ -107,18 +107,18 @@ void PBRModelDemo::CreateModel()
 {
 	_pbrShader = make_shared<Shader>(L"PBRModelDemo.fx");
 
-	shared_ptr<ModelAnimator> modelRenderer = make_shared<ModelAnimator>(_pbrShader);
+	shared_ptr<ModelRenderer> modelRenderer = make_shared<ModelRenderer>(_pbrShader);
 	shared_ptr<Model> model = make_shared<Model>();
 	model->ReadModel(L"FreeDroid/FreeDroid");
 	model->ReadMaterial(L"FreeDroid/FreeDroid");
-	model->ReadAnimation(L"FreeDroid/Idle");
-	model->ReadAnimation(L"FreeDroid/Run");
-	model->ReadAnimation(L"FreeDroid/Slash");
+	//model->ReadAnimation(L"FreeDroid/Idle");
+	//model->ReadAnimation(L"FreeDroid/Run");
+	//model->ReadAnimation(L"FreeDroid/Slash");
 	modelRenderer->SetModel(model);
 
 	_modelObj = make_shared<GameObject>();
 	_modelObj->AddComponent(modelRenderer);
-	_modelObj->GetOrAddTransform()->SetScale(Vec3(0.0001f, 0.0001f, 0.0001f));
+	_modelObj->GetOrAddTransform()->SetScale(Vec3(0.1f, 0.1f, 0.1f));
 	_modelObj->GetOrAddTransform()->SetRotation(Vec3(1.5f, 0.0f, 0.0f));
 	//CUR_SCENE->Add(_modelObj);
 }

@@ -123,11 +123,10 @@ struct PBRMeshOutput
     float3 tangent : TANGENT;
 };
 
-PBRMeshOutput VS(VertexTextureNormalTangentBlend input)
+PBRMeshOutput VS(VS_IN input)
 {
     PBRMeshOutput output;
 
- /*
     float4 worldPos = mul(input.position, W);
     output.worldPosition = worldPos;
     output.position = worldPos;
@@ -136,8 +135,8 @@ PBRMeshOutput VS(VertexTextureNormalTangentBlend input)
     output.uv = input.uv;
     output.normal = input.normal;
     output.tangent = input.tangent;
-*/
     
+ /*
     matrix m = GetAnimationMatrix(input);
     
     output.position = mul(input.position, m);
@@ -148,6 +147,7 @@ PBRMeshOutput VS(VertexTextureNormalTangentBlend input)
     output.uv = input.uv;
     output.normal = mul(input.normal, (float3x3) W);
     output.tangent = mul(input.tangent, (float3x3) W);
+*/
     
     return output;
 }
