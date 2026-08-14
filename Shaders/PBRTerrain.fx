@@ -4,7 +4,7 @@
 
 Texture2D Texture0;
 
-PBRMeshOutput VS(VertexTexture input)
+PBRMeshOutput VS(VertexTextureNormalTangent input)
 {
     PBRMeshOutput output;
     output.position = mul(input.position, W);
@@ -13,8 +13,8 @@ PBRMeshOutput VS(VertexTexture input)
 	
     output.uv = input.uv;
     
-    output.normal = float3(0.0f, 1.0f, 0.0f);
-    output.tangent = float3(1.0f, 0.0f, 0.0f);
+    output.normal = input.normal;
+    output.tangent = input.tangent;
 
 	return output;
 }

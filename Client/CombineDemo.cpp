@@ -114,7 +114,7 @@ void CombineDemo::CreateModel()
 		_droidObj->AddComponent(modelRenderer);
 		_droidObj->GetOrAddTransform()->SetScale(Vec3(0.05f, 0.05f, 0.05f));
 		_droidObj->GetOrAddTransform()->SetRotation(Vec3(1.5f, 0.0f, 0.0f));
-		_droidObj->GetOrAddTransform()->SetPosition(Vec3(20.0f, 5.5f, 30.0f));
+		_droidObj->GetOrAddTransform()->SetPosition(Vec3(20.0f, 6.0f, 30.0f));
 		_modelObjs.emplace_back(_droidObj);
 	}
 	{
@@ -131,7 +131,8 @@ void CombineDemo::CreateModel()
 
 		_towerObj = make_shared<GameObject>();
 		_towerObj->AddComponent(modelRenderer);
-		_towerObj->GetOrAddTransform()->SetPosition(Vec3(30.0f, 7.0f, 20.0f));
+		_towerObj->GetOrAddTransform()->SetPosition(Vec3(30.0f, 10.0f, 20.0f));
+		_towerObj->GetOrAddTransform()->SetScale(Vec3(2.0f, 2.0f, 2.0f));
 		_modelObjs.emplace_back(_towerObj);
 	}
 	{

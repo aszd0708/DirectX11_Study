@@ -64,6 +64,24 @@ void Mesh::CreateTerrain(shared_ptr<Texture> heightMap)
 				v[idx].position.y = height;
 			}
 		}
+
+		for (int32 z = 0; z < height; ++z)
+		{
+			for (int32 x = 0; x < width; ++x)
+			{
+				int32 idx = width * z + x;
+				float hL = v[max(x - 1, 0) + z * width].position.y;
+				float hR = v[min(x + 1, width - 1) + z * width].position.y;
+				float hD = v[x + max(z - 1, 0) * width].position.y;
+				float hU = v[x + min(z + 1, height - 1) * width].position.y;
+
+				Vec3 n = Vec3(hL - hR, 2.0f, hD - hU);
+				n.Normalize();
+				v[idx].normal = n;
+				v[idx].tangent = Vec3(2.0f, hR - hL, 0.0f);  // ∂P/∂x
+				v[idx].tangent.Normalize();
+			}
+		}
 	}
 
 	_vertexBuffer = make_shared<VertexBuffer>();
