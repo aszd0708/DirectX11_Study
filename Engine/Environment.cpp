@@ -33,6 +33,10 @@ void Environment::LoadHDRMap(wstring fileName, wstring shaderPath)
 void Environment::BakeMaps()
 {
     IBLManager::Bake(_hdrMap, _irradianceMap, _prefilteredMap, _brdfMap);
+
+    _iblSRVs[0] = _irradianceMap->GetSRV().Get();
+    _iblSRVs[1] = _prefilteredMap->GetSRV().Get();
+    _iblSRVs[2] = _brdfMap->GetSRV().Get();
 }
 
 void Environment::Render()
@@ -55,4 +59,14 @@ void Environment::Render()
 	_skyboxMesh->GetIndexBuffer()->PushData();
 
 	shader->DrawIndexed(0, 0, _skyboxMesh->GetIndexBuffer()->GetCount());
+}
+
+void Environment::ApplyIBLToShader(shared_ptr<Shader> shader)
+{
+    if (shader == nullptr) return;
+
+    // 이펙트 프레임워크에게 직접 텍스처를 먹여줍니다. (이러면 Apply() 할 때 날아가지 않습니다)
+    shader->GetSRV("IrradianceMap")->SetResource(_iblSRVs[0]);
+    shader->GetSRV("PrefilteredMap")->SetResource(_iblSRVs[1]);
+    shader->GetSRV("BRDFLUT")->SetResource(_iblSRVs[2]);
 }

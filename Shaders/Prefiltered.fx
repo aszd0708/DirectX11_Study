@@ -42,8 +42,8 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
 
             float3 L = reflect(-N, H);
             
-            float4 lightColor = InputMap.SampleLevel(LinearSampler, L, Values.mipLevel);
-            
+            float4 lightColor = InputMap.SampleLevel(LinearSampler, L, 0);
+            lightColor = min(lightColor, 10.0f);
             float NdotL = dot(N, L);
             
             if(NdotL > 0.0f)
@@ -54,7 +54,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
             }
         }
         
-        finalColor /= totalWeight;
+        finalColor /= max(totalWeight, 0.0001f);
         OutputMap[threadID] = finalColor;
     }
 }

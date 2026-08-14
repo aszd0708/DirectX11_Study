@@ -66,9 +66,6 @@
     <ClCompile Include="07. HeightMapDemo.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Terrain.cpp">
-      <Filter>Game\GameObject</Filter>
-    </ClCompile>
     <ClCompile Include="RenderObject.cpp">
       <Filter>Game\GameObject</Filter>
     </ClCompile>
@@ -90,6 +87,12 @@
     <ClCompile Include="PBRModelDemo.cpp">
       <Filter>Game\Demo\PBR</Filter>
     </ClCompile>
+    <ClCompile Include="CombineDemo.cpp">
+      <Filter>Game\Demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Game\GameObject</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.h">
@@ -103,9 +106,6 @@
     </ClInclude>
     <ClInclude Include="07. HeightMapDemo.h">
       <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Terrain.h">
-      <Filter>Game\GameObject</Filter>
     </ClInclude>
     <ClInclude Include="RenderObject.h">
       <Filter>Game\GameObject</Filter>
@@ -127,6 +127,12 @@
     </ClInclude>
     <ClInclude Include="PBRModelDemo.h">
       <Filter>Game\Demo\PBR</Filter>
+    </ClInclude>
+    <ClInclude Include="CombineDemo.h">
+      <Filter>Game\Demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Game\GameObject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -246,6 +252,9 @@
     </FxCompile>
     <FxCompile Include="..\Shaders\SkyBox.fx">
       <Filter>Shaders\Demo</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\PBRTerrain.fx">
+      <Filter>Shaders\Demo\PBR</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

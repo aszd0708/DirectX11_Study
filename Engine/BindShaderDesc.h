@@ -65,7 +65,11 @@ struct MaterialDesc
 	int hasRoughnessMap;
 
 	int hasAOMap;
-	Vec3 padding1;
+
+	int flipUV;
+	int UseSeparateMetallicRoughness;
+
+	float padding1;
 };
 
 // Bone

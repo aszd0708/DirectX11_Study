@@ -114,66 +114,63 @@ struct VS_IN
     float3 tangent : TANGENT;
 };
 
-struct PBRMeshOutput
-{
-    float4 position : SV_POSITION;
-    float3 worldPosition : POSITION1;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-};
-
 PBRMeshOutput VS(VS_IN input)
 {
     PBRMeshOutput output;
 
     float4 worldPos = mul(input.position, W);
-    output.worldPosition = worldPos;
-    output.position = worldPos;
-    output.position = mul(output.position, VP);
+    output.worldPosition = worldPos.xyz;
+    output.position = mul(worldPos, VP);
 
     output.uv = input.uv;
-    output.normal = input.normal;
-    output.tangent = input.tangent;
-    
- /*
-    matrix m = GetAnimationMatrix(input);
-    
-    output.position = mul(input.position, m);
-    output.position = mul(output.position, W);
-    output.worldPosition = output.position.xyz;
-    output.position = mul(output.position, VP);
-    
-    output.uv = input.uv;
-    output.normal = mul(input.normal, (float3x3) W);
-    output.tangent = mul(input.tangent, (float3x3) W);
-*/
-    
+    output.normal = normalize(mul(input.normal, (float3x3) W));
+    output.tangent = normalize(mul(input.tangent, (float3x3) W));
+
     return output;
 }
 
 float4 PS(PBRMeshOutput output) : SV_TARGET
 {
-    float3 lightDir = -GlobalLight.direction;
+    if (Material.flipUV == 1)
+    {
+        output.uv.y = 1.0f - output.uv.y;
+    }
+    
     float4 lightColor = GlobalLight.diffuse;
     float3 worldPosition = output.worldPosition;
+    float3 lightDir = -GlobalLight.position;
     float3 tangent = output.tangent;
     float3 normal = output.normal;
     
     float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
+    baseColor.rgb = pow(baseColor.rgb, 2.2f);
     ComputeNormalMapping(normal, tangent, output.uv);
     
-    float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
-    float ao = metallicRoughness.a;
-    float metallic = metallicRoughness.b;
-    float roughness = metallicRoughness.g;
+    float ao = 1.0f;
+    float metallic = 0.0f;
+    float roughness = 0.0f;
+    if(Material.UseSeparateMetallicRoughness == 1)
+    {
+        //ao = MetallicMap.Sample(LinearSampler, output.uv).r;
+        metallic = MetallicMap.Sample(LinearSampler, output.uv).r;
+        roughness = RoughnessMap.Sample(LinearSampler, output.uv).r;
+    }
+    else
+    {
+        float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
+        ao = metallicRoughness.r;
+        roughness = metallicRoughness.g;
+        metallic = metallicRoughness.b;
+    }
     
     float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
-    finalDirectColor += (baseColor.rgba * 0.2f);
     
-    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness);
+    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness) * ao;
     
     float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
+    
+    finalColor.rgb = ACESFilm(finalColor.rgb);
+    finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
     
     return finalColor;
 }

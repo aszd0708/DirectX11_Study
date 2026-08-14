@@ -4,16 +4,17 @@
 
 class Mesh : public ResourceBase
 {
-    using Super = ResourceBase;
+	using Super = ResourceBase;
 
 public:
-    Mesh();
-    virtual ~Mesh();
+	Mesh();
+	virtual ~Mesh();
 
 	void CreateQuad();
 	void CreateCube();
 	void CreateGrid(int32 sizeX, int32 sizeZ);
 	void CreateSphere();
+	void CreateTerrain(shared_ptr<Texture> heightMap);
 
 	shared_ptr<VertexBuffer> GetVertexBuffer() { return _vertexBuffer; }
 	shared_ptr<IndexBuffer> GetIndexBuffer() { return _indexBuffer; }

@@ -15,19 +15,16 @@ shared_ptr<Texture> ResourceManager::GetOrAddTexture(const wstring& key, const w
 {
 	shared_ptr<Texture> texture = Get<Texture>(key);
 
+	if (texture)
+		return texture;
+
 	if (filesystem::exists(filesystem::path(path)) == false)
 		return nullptr;
 
-	texture = Load<Texture>(key, path);
-
-	if (texture == nullptr)
-	{
-		texture = make_shared<Texture>();
-		texture->SetSRGB(isSRGB);
-		texture->Load(path);
-		Add(key, texture);
-	}
-
+	texture = make_shared<Texture>();
+	texture->SetSRGB(isSRGB);
+	texture->Load(path);
+	Add(key, texture);
 	return texture;
 }
 

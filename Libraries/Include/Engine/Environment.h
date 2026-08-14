@@ -11,6 +11,7 @@ public:
 	void BakeMaps();
 
 	void Render();
+	void ApplyIBLToShader(shared_ptr<Shader> shader);
 
 public:
 	shared_ptr<Material> GetMaterial() { return _material; }
@@ -30,6 +31,9 @@ private:
 	shared_ptr<Texture> _irradianceMap;
 	shared_ptr<Texture> _prefilteredMap;
 	shared_ptr<Texture> _brdfMap;
+
+private:
+	ID3D11ShaderResourceView* _iblSRVs[3] = { nullptr, nullptr, nullptr };
 
 private:
 	const wstring _hdrPath = L"../Resources/PBR/Textures/Environment/HDR/";

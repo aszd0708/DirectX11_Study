@@ -60,6 +60,13 @@ void AssimpTool::Init()
 		converter->ExportMaterialData(L"FreeDroid");
 		converter->ExportModelData(L"FreeDroid");
 	}
+	{
+		shared_ptr<Converter> converter = make_shared<Converter>();
+
+		converter->ReadAssetFile(L"Helmet/source/HEML1.fbx");
+		converter->ExportMaterialData(L"Helmet");
+		converter->ExportModelData(L"Helmet");
+	}
 }
 
 void AssimpTool::Update()

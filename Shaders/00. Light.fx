@@ -49,6 +49,7 @@ Texture2D NormalMap;
 Texture2D MetallicMap;
 Texture2D RoughnessMap;
 Texture2D MetallicRoughnessMap;
+Texture2D AOMap;
 
 ////////////
 // SHADOW //

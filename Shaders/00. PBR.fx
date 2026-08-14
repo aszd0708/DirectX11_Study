@@ -66,14 +66,13 @@ float3 GetDiffuseColor(float3 normal, float4 baseColor, float metallic)
 
 float3 GetSpecular(float3 normal, float3 reflectVector, float3 view, float roughness, float3 F0)
 {
-    float3 prefiltered = PrefilteredMap.SampleLevel(PBRSampler, reflectVector, roughness * MAX_MIP_LEVEL).rbg;
+    float3 prefiltered = PrefilteredMap.SampleLevel(PBRSampler, reflectVector, roughness * MAX_MIP_LEVEL).rgb;
     
     float NdotV = max(dot(normal, view), 0.0001f);
     float2 envBRDF = BRDFLUT.Sample(PBRSampler, float2(NdotV, roughness)).rg;
 
-    float3 specualer = prefiltered * (F0 * envBRDF.x + envBRDF.y);
-    
-    return specualer;
+    float f90 = saturate(50.0f * dot(F0, 0.33f));
+    return prefiltered * (F0 * envBRDF.x + f90 * envBRDF.y);
 }
 
 float4 GetPBRDirect(float3 worldPosition, float3 normal, float4 baseColor, float metallic, float roughness, float3 lightDir, float4 lightColor)
@@ -97,17 +96,27 @@ float4 GetPBRDirect(float3 worldPosition, float3 normal, float4 baseColor, float
     return PBR;
 }
 
+float3 ACESFilm(float3 x)
+{
+    float a = 2.51f;
+    float b = 0.03f;
+    float c = 2.43f;
+    float d = 0.59f;
+    float e = 0.14f;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0f, 1.0f);
+}
+
 float3 GetIBL(float3 worldPosition, float3 normal, float4 baseColor, float metallic, float rougness)
 {
     float3 viewVector = CameraDirection(worldPosition);
     float3 diffuse = GetDiffuseColor(normal, baseColor, metallic);
     
     float3 reflectVector = reflect(-viewVector, normal);
-    float3 F0 = float3(0.4f, 0.4f, 0.4f);
+    float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, baseColor.rgb, metallic);
     float3 specular = GetSpecular(normal, reflectVector, viewVector, rougness, F0);
     
-    float3 finalColor = diffuse * specular;
+    float3 finalColor = diffuse + specular;
     return finalColor;
 }
 

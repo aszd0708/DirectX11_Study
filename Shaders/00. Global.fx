@@ -1,6 +1,8 @@
 #ifndef _GLOBAL_FX_
 #define _GLOBAL_FX_
 
+#define DEBUG_VALUE(value) float4(value, value, value, 1.0f)
+
 /////////////////
 // ConstBuffer //
 /////////////////
@@ -84,6 +86,23 @@ struct VertexOutput
 };
 
 struct MeshOutput
+{
+    float4 position : SV_POSITION;
+    float3 worldPosition : POSITION1;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+};
+
+struct MaterialFlagDesc
+{
+    int FlipUV;
+    int UseSeparateMetallicRoughness;
+    int Padding1;
+    int Padding2;
+};
+
+struct PBRMeshOutput
 {
     float4 position : SV_POSITION;
     float3 worldPosition : POSITION1;
@@ -179,7 +198,10 @@ struct MaterialDesc
     int hasRoughnessMap;
     
     int hasAOMap;
-    float3 padding;
+    int flipUV;
+    int UseSeparateMetallicRoughness;
+
+    float padding1;
 };
 
 cbuffer MaterialBuffer

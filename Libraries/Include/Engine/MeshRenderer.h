@@ -1,9 +1,9 @@
 #pragma once
 #include "Component.h"
+#include "Material.h"
+#include "Shader.h"
 
 class Mesh;
-class Shader;
-class Material;
 
 class MeshRenderer : public Component
 {
@@ -11,6 +11,9 @@ class MeshRenderer : public Component
 public:
 	MeshRenderer();
 	virtual ~MeshRenderer();
+
+	shared_ptr<Shader> GetShader() { return _material->GetShader(); }
+	shared_ptr<Material> GetMaterial() { return _material; }
 
 	void SetMesh(shared_ptr<Mesh> mesh) { _mesh = mesh; }
 	void SetMaterial(shared_ptr<Material> material) { _material = material; }

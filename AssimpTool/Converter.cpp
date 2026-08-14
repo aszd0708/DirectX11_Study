@@ -130,12 +130,13 @@ void Converter::ReadMeshData(aiNode* node, int32 bone)
 {
 	if(node->mNumMeshes < 1) return;
 
-	shared_ptr<asMesh> mesh = make_shared<asMesh>();
-	mesh->name = node->mName.C_Str();
-	mesh->boneIndex = bone;
-	
+
 	for (uint32 i = 0; i < node->mNumMeshes; ++i)
 	{
+		shared_ptr<asMesh> mesh = make_shared<asMesh>();
+		mesh->name = node->mName.C_Str();
+		mesh->boneIndex = bone;
+
 		uint32 index = node->mMeshes[i];
 		const aiMesh* srcMesh = _scene->mMeshes[index];
 
@@ -162,6 +163,11 @@ void Converter::ReadMeshData(aiNode* node, int32 bone)
 				::memcpy(&vertex.normal, &srcMesh->mNormals[v], sizeof(Vec3));
 			}
 
+			if (srcMesh->HasTangentsAndBitangents())
+			{
+				::memcpy(&vertex.tangent, &srcMesh->mTangents[v], sizeof(Vec3));
+			}
+
 			mesh->vertices.emplace_back(vertex);
 		}
 
@@ -175,9 +181,9 @@ void Converter::ReadMeshData(aiNode* node, int32 bone)
 				mesh->indices.emplace_back(face.mIndices[k] + startVertex);
 			}
 		}
-	}
 
-	_meshes.emplace_back(mesh);
+		_meshes.emplace_back(mesh);
+	}
 }
 
 void Converter::ReadSkinData()

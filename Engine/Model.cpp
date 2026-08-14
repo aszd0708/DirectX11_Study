@@ -51,8 +51,14 @@ void Model::ReadMaterial(wstring filename)
 			wstring textureStr = Utils::ToWString(node->GetText());
 			if (textureStr.length() > 0)
 			{
-				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
+				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring(), true);
 				material->SetBaseColorMap(texture);
+				material->GetMaterialDesc().hasBaseColorMap = 1;
+				material->GetBaseColorMap();
+			}
+			else
+			{
+				material->GetMaterialDesc().hasBaseColorMap = 0;
 			}
 		}
 
@@ -65,6 +71,11 @@ void Model::ReadMaterial(wstring filename)
 			{
 				auto texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
 				material->SetNormalMap(texture);
+				material->GetMaterialDesc().hasNormalMap = 1;
+			}
+			else
+			{
+				material->GetMaterialDesc().hasNormalMap = 0;
 			}
 		}
 
@@ -77,6 +88,11 @@ void Model::ReadMaterial(wstring filename)
 			{
 				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
 				material->SetMetallicMap(texture);
+				material->GetMaterialDesc().hasMetallicMap = 1;
+			}
+			else
+			{
+				material->GetMaterialDesc().hasMetallicMap = 0;
 			}
 		}
 
@@ -89,6 +105,11 @@ void Model::ReadMaterial(wstring filename)
 			{
 				shared_ptr<Texture> texture = RESOURCES->GetOrAddTexture(textureStr, (parentPath / textureStr).wstring());
 				material->SetRoughnessMap(texture);
+				material->GetMaterialDesc().hasRoughnessMap = 1;
+			}
+			else
+			{
+				material->GetMaterialDesc().hasRoughnessMap = 0;
 			}
 		}
 

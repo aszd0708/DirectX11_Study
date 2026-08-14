@@ -14,14 +14,14 @@ ModelRenderer::~ModelRenderer()
 {
 }
 
-void ModelRenderer::SetModel(shared_ptr<Model> model)
+void ModelRenderer::SetModel(shared_ptr<Model> model, bool isSeperatedMetallicRoughness)
 {
 	_model = model;
 
 	const auto& materials = _model->GetMaterials();
 	for (auto& material : materials)
 	{
-		material->SetShader(_shader);
+		material->SetShader(_shader, isSeperatedMetallicRoughness);
 	}
 }
 

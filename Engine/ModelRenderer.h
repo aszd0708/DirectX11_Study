@@ -13,7 +13,7 @@ public:
 	ModelRenderer(shared_ptr<Shader> shader);
 	virtual ~ModelRenderer();
 
-	void SetModel(shared_ptr<Model> model);
+	void SetModel(shared_ptr<Model> model, bool isSeperatedMetallicRoughness = false);
 	void SetPass(const int& pass) { _pass = pass; }
 
 	void Render(shared_ptr<Shader> customShader = nullptr);

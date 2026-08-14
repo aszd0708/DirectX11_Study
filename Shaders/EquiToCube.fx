@@ -14,7 +14,7 @@ void CS_Main(uint3 threadID : SV_DispatchThreadID)
     uv += 0.5f;
     
     float4 color = InputMap.SampleLevel(LinearSampler, uv, 0);
-    
+    color.rgb = min(color.rgb, 16.0f);
     OutputMap[threadID] = color;
 }
 

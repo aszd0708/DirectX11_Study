@@ -18,7 +18,7 @@ public:
 	friend class MeshRenderer;
 
 	shared_ptr<Shader> GetShader() { return _shader; }
-	void SetShader(shared_ptr<Shader> shader);
+	void SetShader(shared_ptr<Shader> shader, bool isSeperatedMetallicRoughness = false);
 	MaterialDesc& GetMaterialDesc() { return _desc; }
 
 private:
@@ -51,6 +51,8 @@ public:
 	void SetNormalMap(shared_ptr<Texture> normalMap) { _normalMap = normalMap; }
 	void SetMetallicMap(shared_ptr<Texture> metallicMap) { _metallicMap = metallicMap; }
 	void SetRoughnessMap(shared_ptr<Texture> roughnessMap) { _roughnessMap = roughnessMap; }
+
+	void SetIsSeperatedMetallicRoughness(bool value) { _isSeperatedMetallicRoughness = value; }
 	
 private:
 	shared_ptr<Texture> _baseColorMap;
@@ -63,5 +65,7 @@ private:
 	ComPtr<ID3DX11EffectShaderResourceVariable> _metallicBuffer;
 	ComPtr<ID3DX11EffectShaderResourceVariable> _roughnessBuffer;
 	ComPtr<ID3DX11EffectShaderResourceVariable> _metallicRoughnessBuffer;
+
+	bool _isSeperatedMetallicRoughness;
 };
 

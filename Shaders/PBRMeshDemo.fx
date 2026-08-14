@@ -10,15 +10,6 @@ struct VS_IN
     float3 tangent : TANGENT;
 };
 
-struct PBRMeshOutput
-{
-    float4 position : SV_POSITION;
-    float3 worldPosition : POSITION1;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
-    float3 tangent : TANGENT;
-};
-
 PBRMeshOutput VS(VS_IN input)
 {
     PBRMeshOutput output;
@@ -49,6 +40,8 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
     float roughness = RoughnessMap.Sample(LinearSampler, output.uv).r;
     
     float4 finalColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
+    finalColor.rgb = ACESFilm(finalColor.rgb);
+    finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
     return finalColor;
 }
 

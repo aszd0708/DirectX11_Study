@@ -10,17 +10,23 @@ Material::~Material()
 {
 }
 
-void Material::SetShader(shared_ptr<Shader> shader)
+void Material::SetShader(shared_ptr<Shader> shader, bool isSeperatedMetallicRoughness)
 {
 	_shader = shader;
+	_isSeperatedMetallicRoughness = isSeperatedMetallicRoughness;
 
 	_baseColorBuffer = shader->GetSRV("BaseColorMap");
 	_normalEffectBuffer = shader->GetSRV("NormalMap");
-	/*
-	_metallicBuffer = shader->GetSRV("MetallicMap");
-	_roughnessBuffer = shader->GetSRV("RoughnessMap");
-	*/
-	_metallicRoughnessBuffer = shader->GetSRV("MetallicRoughnessMap");
+	
+	if (_isSeperatedMetallicRoughness)
+	{
+		_metallicBuffer = shader->GetSRV("MetallicMap");
+		_roughnessBuffer = shader->GetSRV("RoughnessMap");
+	}
+	else
+	{
+		_metallicRoughnessBuffer = shader->GetSRV("MetallicRoughnessMap");
+	}
 }
 
 void Material::Update()
@@ -45,12 +51,26 @@ void Material::Update()
 
 	if (_metallicMap)
 	{
-		_metallicRoughnessBuffer->SetResource(_metallicMap->GetComPtr().Get());
+		if (_isSeperatedMetallicRoughness)
+		{
+			_metallicBuffer->SetResource(_metallicMap->GetComPtr().Get());
+		}
+		else
+		{
+			_metallicRoughnessBuffer->SetResource(_metallicMap->GetComPtr().Get());
+		}
 	}
 
 	if (_roughnessMap)
 	{
-		_metallicRoughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
+		if (_isSeperatedMetallicRoughness)
+		{
+			_roughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
+		}
+		else
+		{
+			_metallicRoughnessBuffer->SetResource(_roughnessMap->GetComPtr().Get());
+		}
 	}
 }
 
