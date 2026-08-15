@@ -26,7 +26,7 @@ public:
 	void Create(uint32 width, uint32 height) override;
 	void BindRTVAndDSV() override;
 
-	Matrix GetLightView(shared_ptr<Light> light);
+	Matrix GetLightView(const eShadowMapType& shadowMapType, shared_ptr<Light> light);
 	Matrix GetLightProj(const eShadowMapType& shadowMapType, shared_ptr<Light> light);
 	Matrix GetLightVP(const eShadowMapType& shadowMapType, shared_ptr<Light> light);
 

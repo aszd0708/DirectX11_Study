@@ -273,6 +273,9 @@
     <ClInclude Include="Shadow.h">
       <Filter>01. Graphics\Shadow</Filter>
     </ClInclude>
+    <ClInclude Include="EnvironmentController.h">
+      <Filter>01. Graphics\Environment</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -478,6 +481,9 @@
     </ClCompile>
     <ClCompile Include="Shadow.cpp">
       <Filter>01. Graphics\Shadow</Filter>
+    </ClCompile>
+    <ClCompile Include="EnvironmentController.cpp">
+      <Filter>01. Graphics\Environment</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

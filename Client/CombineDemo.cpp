@@ -5,6 +5,7 @@
 #include "MeshRenderer.h"
 #include "Material.h"
 #include "Environment.h"
+#include "EnvironmentController.h"
 #include "Model.h"
 #include "ModelRenderer.h"
 #include "Camera.h"
@@ -35,9 +36,9 @@ void CombineDemo::Init()
 
 		LightDesc lightDesc;
 		lightDesc.type = _intLightType;
-		lightDesc.ambient = Vec4(0.4f);
-		lightDesc.diffuse = Vec4(0.4f);
-		lightDesc.specular = Vec4(0.4f);
+		lightDesc.ambient = Vec4(1.0f);
+		lightDesc.diffuse = Vec4(1.0f);
+		lightDesc.specular = Vec4(1.0f);
 		lightDesc.direction = Vec3(1.0f, 0.0f, 1.0f);
 		lightDesc.direction.Normalize();
 		light->GetLight()->SetLightDesc(lightDesc);
@@ -68,8 +69,6 @@ void CombineDemo::Init()
 		_shadow = make_shared<Shadow>((LightDesc::eLightType)lightDesc.type, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	}
 
-
-
 	CreateSkyCube();
 	CreateTerrain();
 	CreateModel();
@@ -79,9 +78,10 @@ void CombineDemo::Update()
 {
 	{
 		//ImGui::SliderInt("Pass", &_modelPass, 0, 5);
-		ImGui::SliderInt("SkyBox", &_skyIndex, 0, _skyObjs.size() - 1);
+		ImGui::SliderFloat("SkyBox", &_blend, 0, _skyCubeController->GetEnvCount() + 1);
+		_skyCubeController->SetBlendValue(_blend);
 	}
-
+	DebugSkyCube();
 	DebugShadow();
 }
 
@@ -103,8 +103,6 @@ void CombineDemo::RenderObjects()
 	DC->OMSetRenderTargets(1, GRAPHICS->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
 
 	_shadow->CreateShadowBuffer(CUR_SCENE->GetLight()->GetLight());
-
-	shared_ptr<Environment> skyCube = _skyObjs[_skyIndex]->GetComponent<Environment>();
 
 	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
 
@@ -131,7 +129,7 @@ void CombineDemo::RenderObjects()
 		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
 		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
 
-		skyCube->ApplyIBLToShader(renderer->GetShader());
+		_skyCubeController->BlendIBL(renderer->GetShader());
 
 		renderer->SetPass(_modelPass);
 		renderer->Render();
@@ -144,11 +142,11 @@ void CombineDemo::RenderObjects()
 		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
 		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
 
-		skyCube->ApplyIBLToShader(renderer->GetShader());
+		_skyCubeController->BlendIBL(renderer->GetShader());
 		renderer->Render();
 	}
 	CUR_SCENE->GetLight()->GetMeshRenderer()->Render();
-	skyCube->Render();
+	_skyCubeController->Render();
 }
 
 void CombineDemo::CreateModel()
@@ -216,30 +214,58 @@ void CombineDemo::CreateModel()
 
 void CombineDemo::CreateSkyCube()
 {
+	vector<shared_ptr<Environment>> skyCubes;
 	{
 		shared_ptr<GameObject> skyObj = make_shared<GameObject>();
 		shared_ptr<Environment> env = make_shared<Environment>();
 		env->LoadHDRMap(L"Night", L"SkyBox.fx");
+		Environment::IntensityDesc desc;
+		desc.IBLIntensity = 0.2f;
+		desc.LightIntensity = 0.8f;
+		env->SetIntensityDesc(desc);
 		skyObj->AddComponent(env);
 		skyObj->GetOrAddTransform();
-		_skyObjs.emplace_back(skyObj);
+		skyCubes.emplace_back(env);
+		_skyCubeIbl.emplace_back(desc.IBLIntensity);
+		_skyCubeLight.emplace_back(desc.LightIntensity);
 	}
 	{
 		shared_ptr<GameObject> skyObj = make_shared<GameObject>();
 		shared_ptr<Environment> env = make_shared<Environment>();
 		env->LoadHDRMap(L"Sunset", L"SkyBox.fx");
+		Environment::IntensityDesc desc;
+		desc.IBLIntensity = 0.5f;
+		desc.LightIntensity = 0.5f;
+		env->SetIntensityDesc(desc);
 		skyObj->AddComponent(env);
 		skyObj->GetOrAddTransform();
-		_skyObjs.emplace_back(skyObj);
+		skyCubes.emplace_back(env);
+		_skyCubeIbl.emplace_back(desc.IBLIntensity);
+		_skyCubeLight.emplace_back(desc.LightIntensity);
 	}
 	{
 		shared_ptr<GameObject> skyObj = make_shared<GameObject>();
 		shared_ptr<Environment> env = make_shared<Environment>();
 		env->LoadHDRMap(L"Dusk", L"SkyBox.fx");
+		Environment::IntensityDesc desc;
+		desc.IBLIntensity = 0.3f;
+		desc.LightIntensity = 0.7f;
+		env->SetIntensityDesc(desc);
 		skyObj->AddComponent(env);
 		skyObj->GetOrAddTransform();
-		_skyObjs.emplace_back(skyObj);
+		skyCubes.emplace_back(env);
+		_skyCubeIbl.emplace_back(desc.IBLIntensity);
+		_skyCubeLight.emplace_back(desc.LightIntensity);
 	}
+
+
+	shared_ptr<Environment> mainEnv = make_shared<Environment>();
+	mainEnv->SetShader(L"SkyBox.fx");
+	_skyObj = make_shared<GameObject>();
+	_skyObj->GetOrAddTransform();
+	_skyObj->AddComponent(mainEnv);
+
+	_skyCubeController = make_shared<EnvironmentController>(skyCubes, mainEnv);
 }
 
 void CombineDemo::CreateTerrain()
@@ -266,6 +292,38 @@ void CombineDemo::CreateTerrain()
 	_terrain->GetOrAddTransform();
 }
 
+void CombineDemo::DebugSkyCube()
+{
+	ImGui::Begin("SkyCube Debugger");
+	for (int i = 0; i < _skyCubeController->GetEnvCount(); ++i)
+	{
+		float ibl = _skyCubeIbl[i];
+		float light = _skyCubeLight[i];
+
+		if (ImGui::SliderFloat(("LightIntensity " + to_string(i)).c_str(), &light, 0.0f, 1.0f))
+		{
+			Environment::IntensityDesc newDesc;
+			ibl = 1.0f - light;
+			newDesc.IBLIntensity = ibl;
+			newDesc.LightIntensity = light;
+			_skyCubeController->SetIntensityDesc(i, newDesc);
+			_skyCubeIbl[i] = ibl;
+			_skyCubeLight[i] = light;
+		}
+		if (ImGui::SliderFloat(("IBLIntensity " + to_string(i)).c_str(), &ibl, 0.0f, 1.0f))
+		{
+			Environment::IntensityDesc newDesc;
+			light = 1.0f - ibl;
+			newDesc.IBLIntensity = ibl;
+			newDesc.LightIntensity = light;
+			_skyCubeController->SetIntensityDesc(i, newDesc);
+			_skyCubeIbl[i] = ibl;
+			_skyCubeLight[i] = light;
+		}
+	}
+	ImGui::End();
+}
+
 void CombineDemo::DebugShadow()
 {
 
@@ -285,6 +343,15 @@ void CombineDemo::DebugShadow()
 	}
 
 	{
+		ImGui::DragFloat4("LightDiffuse", (float*)(&_lightDiffuse), 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat4("LightSpecular", (float*)(&_lightSpecular), 0.1f, 0.0f, 10.0f);
+		ImGui::DragFloat4("LightAmbient", (float*)(&_lightAmbient), 0.1f, 0.0f, 10.0f);
+		desc.ambient = _lightAmbient;
+		desc.diffuse = _lightDiffuse;
+		desc.specular = _lightDiffuse;
+	}
+
+	{
 
 		int prevValue = _intLightType;
 		ImGui::SliderInt("LightType", (int*)(&_intLightType), 0, (int)LightDesc::eLightType::Spot);
@@ -295,7 +362,6 @@ void CombineDemo::DebugShadow()
 		}
 	}
 
-	CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
 	
 	int count = 1;
 	switch (desc.type)
@@ -307,8 +373,9 @@ void CombineDemo::DebugShadow()
 			count = ShadowMapPoint::MAX_TEXTURE_COUNT;
 		break;
 	}
+	CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
 
-	ImGui::Begin("CubeMap Debugger");
+	ImGui::Begin("Shadow Debugger");
 	for (int i = 0; i < count; i++)
 	{
 		// i번째 면을 128x128 크기로 띄워봄!

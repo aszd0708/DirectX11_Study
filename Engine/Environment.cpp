@@ -8,6 +8,9 @@ Environment::Environment() : Component(ComponentType::Script)
 {
     _hdrMap = make_shared<Texture>();
     _skyboxMesh = make_shared<Mesh>();
+
+    _intensityBuffer = make_shared<ConstantBuffer<IntensityDesc>>();
+    _intensityBuffer->Create();
 }
 
 Environment::~Environment()
@@ -21,13 +24,18 @@ void Environment::LoadHDRMap(wstring fileName, wstring shaderPath)
    
     _hdrMap->LoadHDR(fileName);
 
+    SetShader(shaderPath);
+    _material->GetShader()->GetSRV("BaseColorMap")->SetResource(_hdrMap->GetComPtr().Get());
+
+    BakeMaps();
+}
+
+void Environment::SetShader(wstring shaderPath)
+{
     shared_ptr<Shader> shader = make_shared<Shader>(shaderPath);
     _material = make_shared<Material>();
     _material->SetShader(shader);
     _skyboxMesh->CreateSphere();
-	shader->GetSRV("BaseColorMap")->SetResource(_hdrMap->GetComPtr().Get());
-
-    BakeMaps();
 }
 
 void Environment::BakeMaps()
@@ -69,4 +77,21 @@ void Environment::ApplyIBLToShader(shared_ptr<Shader> shader)
     shader->GetSRV("IrradianceMap")->SetResource(_iblSRVs[0]);
     shader->GetSRV("PrefilteredMap")->SetResource(_iblSRVs[1]);
     shader->GetSRV("BRDFLUT")->SetResource(_iblSRVs[2]);
+    shader->GetConstantBuffer("IntensityBuffer")->SetConstantBuffer(_intensityBuffer->GetComPtr().Get());
+}
+
+void Environment::SetSRV(shared_ptr<Texture> hdrA, shared_ptr<Texture> hdrB)
+{
+    ID3D11ShaderResourceView* prefilteredArray[2] =
+    {
+        hdrA->GetComPtr().Get(),
+        hdrB->GetComPtr().Get()
+    };
+    _material->GetShader()->GetSRV("BaseColorMap")->SetResourceArray(prefilteredArray, 0, 2);
+}
+
+void Environment::SetIntensityDesc(IntensityDesc& desc)
+{
+    _intensityDesc = desc;
+    _intensityBuffer->CopyData(_intensityDesc);
 }

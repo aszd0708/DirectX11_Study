@@ -21,7 +21,7 @@ PBRMeshOutput VS(VertexTextureNormalTangent input)
 
 float4 PS(PBRMeshOutput input) : SV_TARGET
 {
-    float3 lightDir = -GlobalLight.direction;
+    float3 lightDir = GlobalLight.direction;
     float4 lightColor = GlobalLight.diffuse;
     float4 worldPosition = input.worldPosition;
     float3 tangent = input.tangent;
@@ -38,18 +38,18 @@ float4 PS(PBRMeshOutput input) : SV_TARGET
     float metallic = 0.0f;
     float roughness = roughnessMap.r;
     
-    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r;
+    float cameraDepth = input.position.w;
+    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
     
-    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness);
+    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r * IntensityDesc.LightIntensity * shadow;
+    
+    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness, SkyCubeBlendFactorDesc.LerpValue) * IntensityDesc.IBLIntensity;
     
     float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
     finalColor.rgb = ACESFilm(finalColor.rgb);
     finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
     
-    float cameraDepth = input.position.w;
-    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
-    
-    return float4(finalColor.r * shadow, finalColor.g * shadow, finalColor.b * shadow, 1.0f);
+    return finalColor;
 }
 
 technique11 T0

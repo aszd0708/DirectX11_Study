@@ -5,6 +5,7 @@
 #include "MeshRenderer.h"
 #include "ModelRenderer.h"
 #include "ModelAnimator.h"
+#include "Camera.h"
 
 ShadowMapDiractional::ShadowMapDiractional(float width, float height) : ShadowMapBase()
 {
@@ -40,12 +41,27 @@ void ShadowMapDiractional::BindRTVAndDSV()
 	vp.RSSetViewport();
 }
 
-Matrix ShadowMapDiractional::GetLightView(shared_ptr<Light> light)
+Matrix ShadowMapDiractional::GetLightView(const eShadowMapType& shadowMapType, shared_ptr<Light> light)
 {
 	LightDesc desc = light->GetLightDesc();
 	Vec3 dir = desc.direction; // 고정값 또는 ImGui 슬라이더 (카메라 Look 금지)
-	dir.Normalize();
-	return ::XMMatrixLookAtLH(desc.position, desc.position + dir, Vec3(0, 1, 0));
+
+	Matrix invView = Camera::S_MatView.Invert();
+	Vec3 camPos = invView.Translation();
+	Vec3 camForward = Vec3(invView._31, invView._32, invView._33);
+	camForward.Normalize();
+
+	float centerDist = 0.0f;
+	switch (shadowMapType)
+	{
+	case eShadowMapType::Near: centerDist = 7.5f;   break;
+	case eShadowMapType::Mid:  centerDist = 37.5f;  break;
+	case eShadowMapType::Far:  centerDist = 180.0f; break;
+	}
+	Vec3 center = camPos + camForward * centerDist;
+
+	Vec3 eye = center - dir * 300.0f;
+	return ::XMMatrixLookAtLH(eye, center, Vec3(0, 1, 0));
 }
 
 Matrix ShadowMapDiractional::GetLightProj(const eShadowMapType& shadowMapType, shared_ptr<Light> light)
@@ -85,7 +101,7 @@ Matrix ShadowMapDiractional::GetLightProj(const eShadowMapType& shadowMapType, s
 
 Matrix ShadowMapDiractional::GetLightVP(const eShadowMapType& shadowMapType, shared_ptr<Light> light)
 {
-	return GetLightView(light) * GetLightProj(shadowMapType, light);
+	return GetLightView(shadowMapType, light) * GetLightProj(shadowMapType, light);
 }
 
 void ShadowMapDiractional::RenderShadowMap(shared_ptr<Light> light, shared_ptr<Shader> shader, vector<shared_ptr<GameObject>>& objects)
@@ -100,7 +116,7 @@ void ShadowMapDiractional::RenderShadowMap(shared_ptr<Light> light, shared_ptr<S
 
 		DC->OMSetRenderTargets(0, nullptr, GetDSV(shadowMapType).Get());
 
-		shader->PushGlobalData(GetLightView(light), GetLightProj(type, light));
+		shader->PushGlobalData(GetLightView(type, light), GetLightProj(type, light));
 
 		SetShadowPass(shader, objects);
 	}

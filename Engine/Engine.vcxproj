@@ -173,6 +173,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClInclude Include="DepthStencil.h" />
     <ClInclude Include="EnginePch.h" />
     <ClInclude Include="Environment.h" />
+    <ClInclude Include="EnvironmentController.h" />
     <ClInclude Include="FileUtils.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameObject.h" />
@@ -245,6 +246,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="DepthStencil.cpp" />
     <ClCompile Include="Environment.cpp" />
+    <ClCompile Include="EnvironmentController.cpp" />
     <ClCompile Include="FileUtils.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameObject.cpp" />

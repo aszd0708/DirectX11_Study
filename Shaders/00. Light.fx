@@ -82,13 +82,12 @@ float4 GetLightAttenuationAndLightDir(int type, float3 lightPos, float3 lightDir
         float3 toPixel = worldPosition - lightPos;
         float dist = length(toPixel);
         lightDir = toPixel / dist;
+        attenuation = saturate(1.0f - (dist / GlobalLight.range));
     
         if (GlobalLight.type == LIGHT_TYPE_SPOT)
         {
             // 거리가 Range에 가까워질수록 빛이 0에 수렴
-            attenuation = saturate(1.0f - (dist / GlobalLight.range));
-        
-            float cosAngle = dot(lightDir, lightDir);
+            float cosAngle = dot(lightDir, normalize(GlobalLight.direction));
         
             float spotRadian = radians(GlobalLight.angle);
             float minCos = cos(spotRadian);
@@ -206,7 +205,7 @@ float CalculateShadowSpot(float4 worldPos, Matrix lightVP, float3 normal)
         }
     }
     shadowPercent /= 9.0f;
-    return lerp(0.1f, 1.0f, shadowPercent);
+    return lerp(0.0f, 1.0f, shadowPercent);
 }
 
 float CalculateShadowPoint(float4 worldPos, float3 normal)
@@ -231,7 +230,7 @@ float CalculateShadowPoint(float4 worldPos, float3 normal)
                      lightDir,
                      currentDepth - bias).r;
     
-    return lerp(0.1f, 1.0f, shadowPercent);
+    return lerp(0.0f, 1.0f, shadowPercent);
 }
 
 float CalculateShadow(int type, float cameraDepth, float4 worldPos, float3 normal, Matrix lightVP[3])

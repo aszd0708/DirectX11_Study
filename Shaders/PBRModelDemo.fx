@@ -138,7 +138,7 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
     
     float4 lightColor = GlobalLight.diffuse;
     float4 worldPosition = output.worldPosition;
-    float3 lightDir = -GlobalLight.position;
+    float3 lightDir = GlobalLight.direction;
     float3 tangent = output.tangent;
     float3 normal = output.normal;
     
@@ -166,27 +166,19 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
         metallic = metallicRoughness.b;
     }
     
-    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r;
+    float cameraDepth = output.position.w;
     
-    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness) * ao;
+    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
+    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r * IntensityDesc.LightIntensity * shadow;
+    
+    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness, SkyCubeBlendFactorDesc.LerpValue) * ao * IntensityDesc.IBLIntensity;
     
     float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
     
     finalColor.rgb = ACESFilm(finalColor.rgb);
     finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
     
-    float cameraDepth = output.position.w;
-    int cascadeIndex = 0;
-    if (cameraDepth > CascadeEnd.y)
-        cascadeIndex = 2; // 60m보다 멀면 2번 맵
-    else if (cameraDepth > CascadeEnd.x)
-        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
-    else
-        cascadeIndex = 0; // 15m 이내면 0번 맵
-    
-    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
-    
-    return finalColor * shadow;
+    return finalColor;
 }
 
 technique11 T0

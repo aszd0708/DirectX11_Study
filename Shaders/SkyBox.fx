@@ -1,5 +1,17 @@
 #include "00. Global.fx"
-Texture2D<float4> BaseColorMap : register(t0);
+Texture2D<float4> BaseColorMap[2] : register(t0);
+
+struct sSkyCubeBlendFactor
+{
+    float LerpValue;
+    
+    float3 padding;
+};
+
+cbuffer SkyCubeLerpBuffer
+{
+    sSkyCubeBlendFactor SkyCubeBlendFactorDesc;
+};
 
 struct VS_OUT
 {
@@ -23,8 +35,11 @@ VS_OUT VS(VertexTextureNormalTangent input)
 
 float4 PS(VS_OUT input) : SV_TARGET
 {
-    float4 color = BaseColorMap.Sample(LinearSampler, input.uv);
-    return color;
+    float4 colorA = BaseColorMap[0].Sample(LinearSampler, input.uv);
+    float4 colorB = BaseColorMap[1].Sample(LinearSampler, input.uv);
+    
+    float4 finalIrradiance = lerp(colorA, colorB, SkyCubeBlendFactorDesc.LerpValue);
+    return finalIrradiance;
 }
 
 float4 PS_RED(VS_OUT input) : SV_Target
