@@ -89,6 +89,15 @@ void GameObject::FixedUpdate()
 	}
 }
 
+void GameObject::Resize(int width, int height)
+{
+	for (shared_ptr<Component>& component : _components)
+	{
+		if (component)
+			component->Resize(width, height);
+	}
+}
+
 std::shared_ptr<Component> GameObject::GetFixedComponent(ComponentType type)
 {
 	uint8 index = static_cast<uint8>(type);

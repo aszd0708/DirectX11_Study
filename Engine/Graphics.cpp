@@ -25,6 +25,25 @@ void Graphics::RenderEnd()
 	HRESULT hr = _swapChain->Present(1, 0);
 	CHECK(hr);
 }
+
+void Graphics::OnResize(int newWidth, int newHeight)
+{
+	if(_swapChain == nullptr || _renderTargetView == nullptr || _depthStencilView == nullptr || _depthStencilTexture == nullptr) return;
+
+	GAME->GetGameDesc().width = newWidth;
+	GAME->GetGameDesc().height = newHeight;
+
+	_renderTargetView.Reset();
+	_depthStencilView.Reset();
+	_depthStencilTexture.Reset();
+
+	_swapChain->ResizeBuffers(1, newWidth, newHeight, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+	
+	CreateRenderTargetView();
+	CreateDepthStencilView();
+	SetViewport(GAME->GetGameDesc().width, GAME->GetGameDesc().height);
+}
+
 void Graphics::CreateDeviceAndSwapChain()
 {
 	DXGI_SWAP_CHAIN_DESC desc;

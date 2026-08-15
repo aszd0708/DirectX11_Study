@@ -20,6 +20,7 @@ public:
 	void Update();
 	void LateUpdate();
 	void FixedUpdate();
+	void Resize(int width, int height);
 
 	shared_ptr<Component> GetFixedComponent(ComponentType type);
 	shared_ptr<Transform> GetTransform();

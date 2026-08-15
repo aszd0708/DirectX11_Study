@@ -9,3 +9,8 @@ void SceneManager::Update()
 	_currentScene->Update();
 	_currentScene->LateUpdate();
 }
+
+void SceneManager::OnResize(int width, int height)
+{
+	_currentScene->Resize(width, height);
+}

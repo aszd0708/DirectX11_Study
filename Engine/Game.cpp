@@ -88,7 +88,33 @@ LRESULT CALLBACK Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM 
 	switch (message)
 	{
 	case WM_SIZE:
+	{
+		if (wParam == SIZE_MAXIMIZED || wParam == SIZE_RESTORED)
+		{
+			if(GRAPHICS == nullptr) break;
+
+			RECT rect;
+			GetClientRect(handle, &rect);
+			int width = rect.right;
+			int height = rect.bottom;
+			GRAPHICS->OnResize(width, height);
+
+			SCENE->OnResize(width, height);
+		}
 		break;
+	}
+
+	case WM_EXITSIZEMOVE:
+	{
+		RECT rect;
+		GetClientRect(handle, &rect);
+		int width = rect.right;
+		int height = rect.bottom;
+		GRAPHICS->OnResize(width, height);
+
+		SCENE->OnResize(width, height);
+		break;
+	}
 	case WM_CLOSE:
 	case WM_DESTROY:
 		PostQuitMessage(0);

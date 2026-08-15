@@ -117,7 +117,7 @@ float4 GetPBRDirect(float3 worldPosition, float3 normal, float4 baseColor, float
     float3 diffuse = kd * (baseColor.rgb / PI);
     float3 specular = (D * F * G) / max(4.0f * dot(normal, lightDir) * dot(normal, viewVector), 0.0001f);
     float3 radiance = max(lightColor.rgb * (dot(normal, lightDir)), 0.0f);
-    
+  
     float3 finalColor = (diffuse + specular) * radiance;
     
     float4 PBR = float4(finalColor, 1.0f);

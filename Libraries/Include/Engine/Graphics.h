@@ -14,6 +14,8 @@ public:
 	ComPtr<ID3D11Device> GetDevice() { return _device; }
 	ComPtr<ID3D11DeviceContext> GetDeviceContext() { return _deviceContext; }
 
+	void OnResize(int newWidth, int newHeight);
+
 private:
 	void CreateDeviceAndSwapChain();
 	void CreateRenderTargetView();

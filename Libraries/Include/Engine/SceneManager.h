@@ -7,6 +7,7 @@ class SceneManager
 
 public:
 	void Update();
+	void OnResize(int width, int height);
 
 	template<typename T>
 	void ChangeScene(shared_ptr<T> scene)

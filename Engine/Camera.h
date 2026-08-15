@@ -15,6 +15,7 @@ public:
 	virtual ~Camera();
 	
 	virtual void Update() override;
+	virtual void Resize(int width, int height) override;
 
 	void UpdateMatrix();
 

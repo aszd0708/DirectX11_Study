@@ -20,6 +20,12 @@ void Camera::Update()
 	UpdateMatrix();
 }
 
+void Camera::Resize(int width, int height)
+{
+	_width = static_cast<float>(GAME->GetGameDesc().width);
+	_height = static_cast<float>(GAME->GetGameDesc().height);
+}
+
 void Camera::UpdateMatrix()
 {
 	Vec3 eyePosition = GetTransform()->GetPosition();

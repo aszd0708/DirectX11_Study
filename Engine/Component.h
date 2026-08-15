@@ -35,6 +35,8 @@ public:
 	virtual void LateUpdate() { }
 	virtual void FixedUpdate() { }
 
+	virtual void Resize(int width, int height) { };
+
 public:
 	ComponentType GetType() { return _type; }
 

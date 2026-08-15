@@ -60,6 +60,15 @@ void Scene::Remove(shared_ptr<GameObject> object)
 	_lights.erase(object);
 }
 
+void Scene::Resize(int width, int height)
+{
+	unordered_set<shared_ptr<GameObject>> objects = _cameras;
+	for (shared_ptr<GameObject> object : objects)
+	{
+		object->Resize(width, height);
+	}
+}
+
 shared_ptr<GameObject> Scene::Pick(int32 screenX, int32 screenY)
 {
 	shared_ptr<Camera> camera = GetCamera()->GetCamera();
