@@ -16,33 +16,57 @@ MeshRenderer::~MeshRenderer()
 
 }
 
-void MeshRenderer::Render()
+void MeshRenderer::Render(shared_ptr<Shader> customShader)
 {
 	if (_mesh == nullptr || _material == nullptr) return;
 
-	shared_ptr<Shader> shader = _material->GetShader();
-	if (shader == nullptr) return;
+	shared_ptr<Shader> activateShader = nullptr;
+	if (customShader != nullptr)
+	{
+		activateShader = customShader;
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+	}
+	else
+	{
+		activateShader = _material->GetShader();
+
+		shared_ptr<Shader> shader = _material->GetShader();
+		if (shader == nullptr) return;
+
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+
+		// Global Data
+		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	}
 
 	// Global Data
-	shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
 
 	// Light
 	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
 	if (lightObj != nullptr)
 	{
-		shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
 	}
 
 	_material->Update();
 
 	Matrix world = GetTransform()->GetWorldMatrix();
-	shader->PushTransformData(TransformDesc{ world });
+	activateShader->PushTransformData(TransformDesc{ world });
 
 	// IA
 	_mesh->GetVertexBuffer()->PushData();
 	_mesh->GetIndexBuffer()->PushData();
 
-	shader->DrawIndexed(0, _pass, _mesh->GetIndexBuffer()->GetCount());
+	activateShader->DrawIndexed(0, _pass, _mesh->GetIndexBuffer()->GetCount());
 }
 
 void MeshRenderer::RenderInstancing(shared_ptr<class InstancingBuffer>& buffer)

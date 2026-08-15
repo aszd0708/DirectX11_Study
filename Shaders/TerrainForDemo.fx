@@ -40,7 +40,7 @@ float4 PS(MeshOutput input) : SV_TARGET
         cascadeIndex = 1; // 15m~60m 사이면 1번 맵
     else
         cascadeIndex = 0; // 15m 이내면 0번 맵
-    
+     
     float shadow = CalculateShadowPoint(float4(input.worldPosition.xyz, 1.0f), LightVP, input.normal);
     return float4(color.rgb * shadow, 1.0f);
 }

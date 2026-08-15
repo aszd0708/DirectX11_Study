@@ -216,6 +216,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="Shadow.h" />
     <ClInclude Include="ShadowMapDiractional.h" />
     <ClInclude Include="ShadowMapBase.h" />
     <ClInclude Include="ShadowMapPoint.h" />
@@ -305,6 +306,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="Shadow.cpp" />
     <ClCompile Include="ShadowMapDiractional.cpp" />
     <ClCompile Include="ShadowMapBase.cpp" />
     <ClCompile Include="ShadowMapPoint.cpp" />

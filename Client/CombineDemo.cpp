@@ -10,6 +10,7 @@
 #include "Camera.h"
 #include "CameraScript.h"
 #include "Light.h"
+#include "Shadow.h"
 
 void CombineDemo::Init()
 {
@@ -27,20 +28,47 @@ void CombineDemo::Init()
 	// Light
 	{
 		shared_ptr<GameObject> light = make_shared<GameObject>();
-		light->GetOrAddTransform()->SetPosition(Vec3{ 0.f, 0.f, -5.f });
+		light->GetOrAddTransform()->SetPosition(Vec3(20.0f, 6.0f, 30.0f));
 		light->AddComponent(make_shared<Light>());
+		
+
 
 		LightDesc lightDesc;
-		lightDesc.type = (int)LightDesc::eLightType::Point;
+		lightDesc.type = _intLightType;
 		lightDesc.ambient = Vec4(0.4f);
 		lightDesc.diffuse = Vec4(0.4f);
 		lightDesc.specular = Vec4(0.4f);
 		lightDesc.direction = Vec3(1.0f, 0.0f, 1.0f);
 		lightDesc.direction.Normalize();
 		light->GetLight()->SetLightDesc(lightDesc);
+		light->GetOrAddTransform()->SetPosition(_lightPos);
 
 		CUR_SCENE->Add(light);
+		
+		shared_ptr<Mesh> mesh = make_shared<Mesh>();
+		mesh->CreateSphere();
+		shared_ptr<MeshRenderer> renderer = make_shared<MeshRenderer>();
+		shared_ptr<Texture> baseColorMap = RESOURCES->GetOrAddTexture(L"PBR_Default_BaseColor", L"..\\Resources\\PBR\\Textures\\Sample\\Default\\material_a01_BaseColor.png");
+		shared_ptr<Texture> normalMap = RESOURCES->Load<Texture>(L"PBR_Default_Normal", L"..\\Resources\\PBR\\Textures\\Sample\\Default\\material_a01_Normal.png");
+		shared_ptr<Texture> metallicMap = RESOURCES->Load<Texture>(L"PBR_Default_Metallic", L"..\\Resources\\PBR\\Textures\\Sample\\Default\\material_a01_Metallic.png");
+		shared_ptr<Texture> roughnessMap = RESOURCES->Load<Texture>(L"PBR_Default_Roughness", L"..\\Resources\\PBR\\Textures\\Sample\\Default\\material_a01_Roughness.png");
+		shared_ptr<Material> material = make_shared<Material>();
+		shared_ptr<Shader> shader = make_shared<Shader>(L"PBRMeshDemo.fx");
+		material->SetShader(shader);
+		material->SetBaseColorMap(baseColorMap);
+		material->SetNormalMap(normalMap);
+		material->SetMetallicMap(metallicMap);
+		material->SetRoughnessMap(roughnessMap);
+		renderer->SetPass(0);
+		renderer->SetMesh(mesh);
+		renderer->SetMaterial(material);
+
+		light->AddComponent(renderer);
+
+		_shadow = make_shared<Shadow>((LightDesc::eLightType)lightDesc.type, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	}
+
+
 
 	CreateSkyCube();
 	CreateTerrain();
@@ -54,43 +82,72 @@ void CombineDemo::Update()
 		ImGui::SliderInt("SkyBox", &_skyIndex, 0, _skyObjs.size() - 1);
 	}
 
-	{
-		ImGui::DragFloat("LightAngle", (float*)(&_lightAngle), 0.1f, 0.1f, 359.9f);
-		ImGui::DragFloat("LightRange", (float*)(&_lightRange), 1.0f, 30.f, 180.f);
-
-		LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
-		desc.type = (int)LightDesc::eLightType::Point;
-		Vec3 camPos = CUR_SCENE->GetCamera()->GetTransform()->GetPosition();
-		Vec3 look = CUR_SCENE->GetCamera()->GetTransform()->GetLook();
-		desc.direction = look;
-
-		desc.range = _lightRange;
-		desc.angle = _lightAngle;
-
-		CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
-	}
+	DebugShadow();
 }
 
 void CombineDemo::Render()
 {
+	RenderShadow();
+	RenderObjects();
+}
+
+void CombineDemo::RenderShadow()
+{
+	_shadow->Render(CUR_SCENE->GetLight()->GetLight(), _modelObjs);
+}
+
+void CombineDemo::RenderObjects()
+{
+	GRAPHICS->SetViewport(GAME->GetGameDesc().width, GAME->GetGameDesc().height);
+	GRAPHICS->GetViewport().RSSetViewport();
+	DC->OMSetRenderTargets(1, GRAPHICS->GetRenderTargetView().GetAddressOf(), GRAPHICS->GetDepthStencilView().Get());
+
+	_shadow->CreateShadowBuffer(CUR_SCENE->GetLight()->GetLight());
+
 	shared_ptr<Environment> skyCube = _skyObjs[_skyIndex]->GetComponent<Environment>();
+
+	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
+
+	string shadowResourceKey = "";
+	switch (desc.type)
+	{
+	case (int)LightDesc::eLightType::Directional:
+		shadowResourceKey = "ShadowMapArray";
+		break;
+	case (int)LightDesc::eLightType::Spot:
+		shadowResourceKey = "ShadowMapSpot";
+		break;
+	case (int)LightDesc::eLightType::Point:
+		shadowResourceKey = "ShadowMapCubePoint";
+		break;
+	}
 
 	for (int i = 0; i < _modelObjs.size(); ++i)
 	{
 		shared_ptr<GameObject> obj = _modelObjs[i];
 		shared_ptr<ModelRenderer> renderer = obj->GetModelRenderer();
 
+		shared_ptr<Shader> shader = renderer->GetShader();
+		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
+		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
+
 		skyCube->ApplyIBLToShader(renderer->GetShader());
+
 		renderer->SetPass(_modelPass);
 		renderer->Render();
 	}
 
 	{
 		shared_ptr<MeshRenderer> renderer = _terrain->GetMeshRenderer();
+
+		shared_ptr<Shader> shader = renderer->GetShader();
+		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
+		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
+
 		skyCube->ApplyIBLToShader(renderer->GetShader());
 		renderer->Render();
 	}
-
+	CUR_SCENE->GetLight()->GetMeshRenderer()->Render();
 	skyCube->Render();
 }
 
@@ -131,7 +188,7 @@ void CombineDemo::CreateModel()
 
 		_towerObj = make_shared<GameObject>();
 		_towerObj->AddComponent(modelRenderer);
-		_towerObj->GetOrAddTransform()->SetPosition(Vec3(30.0f, 10.0f, 20.0f));
+		_towerObj->GetOrAddTransform()->SetPosition(Vec3(30.0f, 9.0f, 20.0f));
 		_towerObj->GetOrAddTransform()->SetScale(Vec3(2.0f, 2.0f, 2.0f));
 		_modelObjs.emplace_back(_towerObj);
 	}
@@ -207,4 +264,56 @@ void CombineDemo::CreateTerrain()
 	renderer->SetMesh(mesh);
 	_terrain->AddComponent(renderer);
 	_terrain->GetOrAddTransform();
+}
+
+void CombineDemo::DebugShadow()
+{
+
+	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
+	{
+		ImGui::DragFloat("LightAngle", (float*)(&_lightAngle), 0.1f, 0.1f, 359.9f);
+		ImGui::DragFloat("LightRange", (float*)(&_lightRange), 1.0f, 30.f, 180.f);
+		ImGui::DragFloat3("LightPosition", (float*)(&_lightPos), 0.1f, -360.0f, 359.9f);
+		ImGui::DragFloat3("LightDir", (float*)(&_lightDir), 0.1f, -1.0f, 1.0f);
+
+		desc.range = _lightRange;
+		desc.angle = _lightAngle;
+		desc.position = _lightPos;
+		desc.direction = _lightDir;
+		desc.direction.Normalize();
+		CUR_SCENE->GetLight()->GetOrAddTransform()->SetPosition(_lightPos);
+	}
+
+	{
+
+		int prevValue = _intLightType;
+		ImGui::SliderInt("LightType", (int*)(&_intLightType), 0, (int)LightDesc::eLightType::Spot);
+		desc.type = _intLightType;
+		if (prevValue != _intLightType)
+		{
+			_shadow = make_shared<Shadow>((LightDesc::eLightType)_intLightType, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+		}
+	}
+
+	CUR_SCENE->GetLight()->GetLight()->SetLightDesc(desc);
+	
+	int count = 1;
+	switch (desc.type)
+	{
+		case (int)LightDesc::eLightType::Directional:
+			count = 3;
+		break;
+		case (int)LightDesc::eLightType::Point:
+			count = ShadowMapPoint::MAX_TEXTURE_COUNT;
+		break;
+	}
+
+	ImGui::Begin("CubeMap Debugger");
+	for (int i = 0; i < count; i++)
+	{
+		// i번째 면을 128x128 크기로 띄워봄!
+		ImGui::Image((void*)_shadow->GetLayerSRV(i).Get(), ImVec2(128, 128));
+		if (i != 2 && i != 5) ImGui::SameLine();
+	}
+	ImGui::End();
 }

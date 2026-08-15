@@ -87,7 +87,7 @@ void ModelAnimator::UpdateTweenData()
 	}
 }
 
-void ModelAnimator::Render()
+void ModelAnimator::Render(shared_ptr<Shader> customShader)
 {
 	if (_model == nullptr)
 		return;
@@ -96,18 +96,42 @@ void ModelAnimator::Render()
 		CreateTexture();
 	}
 
+	shared_ptr<Shader> activateShader = nullptr;
+	if (customShader != nullptr)
+	{
+		activateShader = customShader;
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+	}
+	else
+	{
+		activateShader = _shader;
+
+		shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
+		if (lightObj != nullptr)
+		{
+			activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		}
+
+		// Global Data
+		activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	}
+
 	// Global Data
-	_shader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
+	activateShader->PushGlobalData(Camera::S_MatView, Camera::S_MatProjection);
 
 	// Light
 	shared_ptr<GameObject> lightObj = SCENE->GetCurrentScene()->GetLight();
 	if (lightObj != nullptr)
 	{
-		_shader->PushLightData(lightObj->GetLight()->GetLightDesc());
+		activateShader->PushLightData(lightObj->GetLight()->GetLightDesc());
 	}
 
 	// SRV를 통해 정보 전달
-	_shader->GetSRV("TransformMap")->SetResource(_srv.Get());
+	activateShader->GetSRV("TransformMap")->SetResource(_srv.Get());
 
 	// Bones
 	BoneDesc boneDesc;
@@ -118,14 +142,14 @@ void ModelAnimator::Render()
 		shared_ptr<ModelBone> bone = _model->GetBoneByIndex(i);
 		boneDesc.transforms[i] = bone->transform;
 	}
-	_shader->PushBoneData(boneDesc);
+	activateShader->PushBoneData(boneDesc);
 
 	// Transform
 	auto world = GetTransform()->GetWorldMatrix();
-	_shader->PushTransformData(TransformDesc{ world });
+	activateShader->PushTransformData(TransformDesc{ world });
 
 	UpdateTweenData();
-	_shader->PushTweenData(_tweenDesc);
+	activateShader->PushTweenData(_tweenDesc);
 
 	const vector<shared_ptr<ModelMesh>>& meshes = _model->GetMeshes();
 	for (auto& mesh : meshes)
@@ -136,12 +160,12 @@ void ModelAnimator::Render()
 		}
 
 		// BoneIndex
-		_shader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
+		activateShader->GetScalar("BoneIndex")->SetInt(mesh->boneIndex);
 
 		mesh->vertexBuffer->PushData();
 		mesh->indexBuffer->PushData();
 
-		_shader->DrawIndexed(0, _pass, mesh->indexBuffer->GetCount());
+		activateShader->DrawIndexed(0, _pass, mesh->indexBuffer->GetCount());
 	}
 }
 

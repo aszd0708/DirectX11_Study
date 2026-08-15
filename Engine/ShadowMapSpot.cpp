@@ -1,5 +1,11 @@
 #include "pch.h"
 #include "ShadowMapSpot.h"
+#include "ShadowMapBase.h"
+#include "Light.h"
+#include "GameObject.h"
+#include "MeshRenderer.h"
+#include "ModelRenderer.h"
+#include "ModelAnimator.h"
 
 ShadowMapSpot::ShadowMapSpot(uint32 width, uint32 height) : ShadowMapBase()
 {
@@ -28,6 +34,55 @@ void ShadowMapSpot::Create(uint32 width, uint32 height)
 void ShadowMapSpot::BindRTVAndDSV()
 {
 	ShadowMapBase::BindRTVAndDSV();
+}
+
+Matrix ShadowMapSpot::GetLightView(shared_ptr<Light> light)
+{
+	LightDesc desc = light->GetLightDesc();
+	Vec3 dir = desc.direction;
+	dir.Normalize();
+	return ::XMMatrixLookAtLH(desc.position, desc.position + dir, Vec3(0, 1, 0));
+}
+
+Matrix ShadowMapSpot::GetLightProj(shared_ptr<Light> light)
+{
+	LightDesc desc = light->GetLightDesc();
+	float angle = desc.angle;
+	float range = desc.range;
+	float fovY = ::XMConvertToRadians(XMMin(XMMax(angle, 1.0f), 170.0f));
+	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, range);
+}
+
+Matrix ShadowMapSpot::GetLightVP(shared_ptr<Light> light)
+{
+	return GetLightView(light) * GetLightProj(light);
+}
+
+void ShadowMapSpot::RenderShadowMap(shared_ptr<Light> light, shared_ptr<Shader> shader, vector<shared_ptr<GameObject>>& objects)
+{
+	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	vp.RSSetViewport();
+
+	ClearDepthStencilView();
+
+	DC->OMSetRenderTargets(0, nullptr, GetDSV().Get());
+
+	shader->PushGlobalData(GetLightView(light), GetLightProj(light));
+
+	SetShadowPass(shader, objects);
+
+	ID3D11RenderTargetView* nullRTV = nullptr;
+	ID3D11DepthStencilView* nullDSV = nullptr;
+	DC->OMSetRenderTargets(1, &nullRTV, nullptr);
+}
+
+ShadowMapBase::ShadowDesc ShadowMapSpot::CreateShadowBuffer(shared_ptr<Light> light)
+{
+	Matrix vp = GetLightVP(light);
+	ShadowDesc shadowBuffer;
+	shadowBuffer.lightVP[0] = vp;
+	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
+	return shadowBuffer;
 }
 
 void ShadowMapSpot::CreateShaderMapTexture(float width, float height)

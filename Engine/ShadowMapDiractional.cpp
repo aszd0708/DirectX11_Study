@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "ShadowMapDiractional.h"
 #include "ShadowMapBase.h"
+#include "Light.h"
+#include "MeshRenderer.h"
+#include "ModelRenderer.h"
+#include "ModelAnimator.h"
 
 ShadowMapDiractional::ShadowMapDiractional(float width, float height) : ShadowMapBase()
 {
@@ -22,7 +26,6 @@ void ShadowMapDiractional::ClearDepthStencilView(int index)
 
 void ShadowMapDiractional::Create(uint32 width, uint32 height)
 {
-	
 	_width = width;
 	_height = height;
 
@@ -35,6 +38,85 @@ void ShadowMapDiractional::BindRTVAndDSV()
 {
 	Viewport vp(_width, _height);
 	vp.RSSetViewport();
+}
+
+Matrix ShadowMapDiractional::GetLightView(shared_ptr<Light> light)
+{
+	LightDesc desc = light->GetLightDesc();
+	Vec3 dir = desc.direction; // 고정값 또는 ImGui 슬라이더 (카메라 Look 금지)
+	dir.Normalize();
+	return ::XMMatrixLookAtLH(desc.position, desc.position + dir, Vec3(0, 1, 0));
+}
+
+Matrix ShadowMapDiractional::GetLightProj(const eShadowMapType& shadowMapType, shared_ptr<Light> light)
+{
+	float shadowWidth = 0.0f;
+	switch (shadowMapType)
+	{
+		case eShadowMapType::Near:
+		{
+			shadowWidth = 30.0f;
+			break;
+		}
+	
+		case eShadowMapType::Mid:
+		{
+			shadowWidth = 120;
+			break;
+		}
+	
+		case eShadowMapType::Far:
+		{
+			shadowWidth = 500;
+			break;
+		}
+	}
+	
+	float shadowHeight = shadowWidth;
+	float shadowNear = 0.1f;
+	float shadowFar = 1000.0f;
+	return ::XMMatrixOrthographicLH(shadowWidth, shadowHeight, shadowNear, shadowFar);
+
+	float angle = light->GetLightDesc().angle;
+	float range = light->GetLightDesc().range;
+	float fovY = ::XMConvertToRadians(angle);
+	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 0.1f, range);
+}
+
+Matrix ShadowMapDiractional::GetLightVP(const eShadowMapType& shadowMapType, shared_ptr<Light> light)
+{
+	return GetLightView(light) * GetLightProj(shadowMapType, light);
+}
+
+void ShadowMapDiractional::RenderShadowMap(shared_ptr<Light> light, shared_ptr<Shader> shader, vector<shared_ptr<GameObject>>& objects)
+{
+	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	vp.RSSetViewport();
+
+	for (int shadowMapType = (int)ShadowMapDiractional::eShadowMapType::Near; shadowMapType < ShadowMapDiractional::eShadowMapType::MAX; ++shadowMapType)
+	{
+		ShadowMapDiractional::eShadowMapType type = (ShadowMapDiractional::eShadowMapType)shadowMapType;
+		ClearDepthStencilView(shadowMapType);
+
+		DC->OMSetRenderTargets(0, nullptr, GetDSV(shadowMapType).Get());
+
+		shader->PushGlobalData(GetLightView(light), GetLightProj(type, light));
+
+		SetShadowPass(shader, objects);
+	}
+
+	ID3D11RenderTargetView* nullRTV = nullptr;
+	DC->OMSetRenderTargets(1, &nullRTV, nullptr);
+}
+
+ShadowMapBase::ShadowDesc ShadowMapDiractional::CreateShadowBuffer(shared_ptr<Light> light)
+{
+	ShadowDesc shadowBuffer;
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Near] = GetLightVP(ShadowMapDiractional::eShadowMapType::Near, light);
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Mid] = GetLightVP(ShadowMapDiractional::eShadowMapType::Mid, light);
+	shadowBuffer.lightVP[ShadowMapDiractional::eShadowMapType::Far] = GetLightVP(ShadowMapDiractional::eShadowMapType::Far, light);
+	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
+	return shadowBuffer;
 }
 
 void ShadowMapDiractional::CreateShaderMapTexture(float width, float height)

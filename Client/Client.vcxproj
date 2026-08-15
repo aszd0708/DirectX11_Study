@@ -55,51 +55,12 @@
     <FxCompile Include="..\Shaders\00. Light.fx" />
     <FxCompile Include="..\Shaders\00. PBR.fx" />
     <FxCompile Include="..\Shaders\00. Render.fx" />
-    <FxCompile Include="..\Shaders\01. Triangle.fx">
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Effect</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </EntryPointName>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Effect</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="..\Shaders\02. Quad.fx" />
-    <FxCompile Include="..\Shaders\03. ConstBuffer.fx" />
-    <FxCompile Include="..\Shaders\04. Texture.fx" />
-    <FxCompile Include="..\Shaders\05. Sampler.fx" />
-    <FxCompile Include="..\Shaders\06. Terrain.fx" />
-    <FxCompile Include="..\Shaders\07. Normal.fx" />
-    <FxCompile Include="..\Shaders\08. GlobalTest.fx" />
-    <FxCompile Include="..\Shaders\09. Lighting_Ambient.fx" />
-    <FxCompile Include="..\Shaders\10. Lighting_Diffuse.fx" />
-    <FxCompile Include="..\Shaders\11. Lighting_Specular.fx" />
-    <FxCompile Include="..\Shaders\12. Lighting_Emissive.fx" />
-    <FxCompile Include="..\Shaders\13. Lighting.fx" />
-    <FxCompile Include="..\Shaders\14. NormalMapping.fx" />
-    <FxCompile Include="..\Shaders\15. ModelDemo.fx" />
-    <FxCompile Include="..\Shaders\16. AnimationDemo.fx" />
-    <FxCompile Include="..\Shaders\17. TweenDemo.fx" />
-    <FxCompile Include="..\Shaders\18. SkyDemo.fx" />
-    <FxCompile Include="..\Shaders\19. InstancingDemo.fx" />
-    <FxCompile Include="..\Shaders\20. MeshInstancingDemo.fx" />
-    <FxCompile Include="..\Shaders\21. ModelInstancingDemo.fx" />
-    <FxCompile Include="..\Shaders\22. AnimInstancingDemo.fx" />
-    <FxCompile Include="..\Shaders\23. RenderDemo.fx" />
-    <FxCompile Include="..\Shaders\24. RawBufferDemo.fx" />
-    <FxCompile Include="..\Shaders\25. GroupDemo.fx" />
-    <FxCompile Include="..\Shaders\26. TextureBufferDemo.fx" />
-    <FxCompile Include="..\Shaders\27. StructuredBufferDemo.fx" />
-    <FxCompile Include="..\Shaders\DefaultMeshForDemo.fx" />
-    <FxCompile Include="..\Shaders\DefaultMeshInstanceForDemo.fx" />
     <FxCompile Include="..\Shaders\PBRMeshDemo.fx" />
     <FxCompile Include="..\Shaders\PBRModelDemo.fx" />
     <FxCompile Include="..\Shaders\PBRTerrain.fx" />
-    <FxCompile Include="..\Shaders\ShadowMapDemo.fx" />
+    <FxCompile Include="..\Shaders\ShadowMap.fx" />
     <FxCompile Include="..\Shaders\SkyBox.fx" />
     <FxCompile Include="..\Shaders\SSAODemo.fx" />
-    <FxCompile Include="..\Shaders\TerrainForDemo.fx" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

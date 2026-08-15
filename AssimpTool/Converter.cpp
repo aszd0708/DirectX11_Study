@@ -163,6 +163,7 @@ void Converter::ReadMeshData(aiNode* node, int32 bone)
 				::memcpy(&vertex.normal, &srcMesh->mNormals[v], sizeof(Vec3));
 			}
 
+			// Tangent
 			if (srcMesh->HasTangentsAndBitangents())
 			{
 				::memcpy(&vertex.tangent, &srcMesh->mTangents[v], sizeof(Vec3));

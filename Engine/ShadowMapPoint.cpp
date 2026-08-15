@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "ShadowMapPoint.h"
+#include "ShadowMapBase.h"
+#include "Light.h"
 
 ShadowMapPoint::ShadowMapPoint(uint32 width, uint32 height) : ShadowMapBase()
 {
@@ -32,6 +34,56 @@ void ShadowMapPoint::BindRTVAndDSV()
 {
 	Viewport vp(_width, _height);
 	vp.RSSetViewport();
+}
+
+Matrix ShadowMapPoint::GetLightView(shared_ptr<Light> light, const int& index)
+{
+	LightDesc desc = light->GetLightDesc();
+	Vec3 lookVector = ShadowMapPoint::LOOK_VECTOR[index];
+	Vec3 upVector = ShadowMapPoint::UP_VECTOR[index];
+	return ::XMMatrixLookAtLH(desc.position, desc.position + lookVector, upVector);
+}
+
+Matrix ShadowMapPoint::GetLightProj(shared_ptr<Light> light)
+{
+	float range = light->GetLightDesc().range;
+	float fovY = DirectX::XM_PIDIV2;
+	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, range);
+}
+
+Matrix ShadowMapPoint::GetLightVP(shared_ptr<Light> light, int& index)
+{
+	return GetLightView(light, index) * GetLightProj(light);
+}
+
+void ShadowMapPoint::RenderShadowMap(shared_ptr<Light> light, shared_ptr<Shader> shader, vector<shared_ptr<GameObject>>& objects)
+{
+	Viewport vp(SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
+	vp.RSSetViewport();
+
+	for (int i = 0; i < ShadowMapPoint::MAX_TEXTURE_COUNT; ++i)
+	{
+		ClearDepthStencilView(i);
+
+		DC->OMSetRenderTargets(0, nullptr, GetDSV(i).Get());
+
+		shader->PushGlobalData(GetLightView(light, i), GetLightProj(light));
+
+		SetShadowPass(shader, objects);
+	}
+
+	ID3D11RenderTargetView* nullRTV = nullptr;
+	ID3D11DepthStencilView* nullDSV = nullptr;
+	DC->OMSetRenderTargets(1, &nullRTV, nullptr);
+}
+
+ShadowMapBase::ShadowDesc ShadowMapPoint::CreateShadowBuffer(shared_ptr<Light> light)
+{
+	ShadowDesc shadowBuffer;
+	Matrix lightProj = GetLightProj(light);
+	shadowBuffer.cascadeEnd = Vec4(15.0f, 60.0f, 300.0f, 0.0f);
+	shadowBuffer.lightProjValues = Vec2(lightProj._33, lightProj._43);
+	return shadowBuffer;
 }
 
 void ShadowMapPoint::CreateShaderMapTexture(float width, float height)

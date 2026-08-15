@@ -119,7 +119,7 @@ PBRMeshOutput VS(VS_IN input)
     PBRMeshOutput output;
 
     float4 worldPos = mul(input.position, W);
-    output.worldPosition = worldPos.xyz;
+    output.worldPosition = worldPos;
     output.position = mul(worldPos, VP);
 
     output.uv = input.uv;
@@ -137,10 +137,13 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
     }
     
     float4 lightColor = GlobalLight.diffuse;
-    float3 worldPosition = output.worldPosition;
+    float4 worldPosition = output.worldPosition;
     float3 lightDir = -GlobalLight.position;
     float3 tangent = output.tangent;
     float3 normal = output.normal;
+    
+    float4 lightInfo = GetLightAttenuationAndLightDir(GlobalLight.type, GlobalLight.position, lightDir, worldPosition.xyz);
+    lightDir = -lightInfo.gba;
     
     float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
     baseColor.rgb = pow(baseColor.rgb, 2.2f);
@@ -163,133 +166,30 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
         metallic = metallicRoughness.b;
     }
     
-    float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
+    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r;
     
-    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness) * ao;
+    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness) * ao;
     
     float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
     
     finalColor.rgb = ACESFilm(finalColor.rgb);
     finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
     
-    return finalColor;
-}
-
-float4 PS_DirectColor(PBRMeshOutput output) : SV_TARGET
-{
-    float3 lightDir = -GlobalLight.direction;
-    float4 lightColor = GlobalLight.diffuse;
-    float3 worldPosition = output.worldPosition;
-    float3 tangent = output.tangent;
-    float3 normal = output.normal;
+    float cameraDepth = output.position.w;
+    int cascadeIndex = 0;
+    if (cameraDepth > CascadeEnd.y)
+        cascadeIndex = 2; // 60m보다 멀면 2번 맵
+    else if (cameraDepth > CascadeEnd.x)
+        cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+    else
+        cascadeIndex = 0; // 15m 이내면 0번 맵
     
-    float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
-    ComputeNormalMapping(normal, tangent, output.uv);
+    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
     
-    float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
-    float ao = metallicRoughness.a;
-    float metallic = metallicRoughness.b;
-    float roughness = metallicRoughness.g;
-    
-    float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
-    finalDirectColor += (baseColor.rgba * 0.2f);
-    
-    return finalDirectColor;
-}
-
-float4 PS_IBL(PBRMeshOutput output) : SV_TARGET
-{
-    float3 lightDir = -GlobalLight.direction;
-    float4 lightColor = GlobalLight.diffuse;
-    float3 worldPosition = output.worldPosition;
-    float3 tangent = output.tangent;
-    float3 normal = output.normal;
-    
-    float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
-    ComputeNormalMapping(normal, tangent, output.uv);
-    
-    float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
-    float ao = metallicRoughness.a;
-    float metallic = metallicRoughness.b;
-    float roughness = metallicRoughness.g;
-    
-    float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
-    finalDirectColor += (baseColor.rgba * 0.2f);
-    
-    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness);
-    
-    return float4(IBL, 1.0f);
-}
-
-float4 PS_Irradiance(PBRMeshOutput output) : SV_TARGET
-{
-    float3 normal = output.normal;
-    float4 irradiance = IrradianceMap.Sample(PBRSampler, normal);
-    return irradiance;
-}
-
-float4 PS_Prefiltered(PBRMeshOutput output) : SV_TARGET
-{
-    float3 lightDir = -GlobalLight.direction;
-    float4 lightColor = GlobalLight.diffuse;
-    float3 worldPosition = output.worldPosition;
-    float3 tangent = output.tangent;
-    float3 normal = output.normal;
-    
-    float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
-    ComputeNormalMapping(normal, tangent, output.uv);
-    
-    float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
-    float ao = metallicRoughness.a;
-    float metallic = metallicRoughness.b;
-    float roughness = metallicRoughness.g;
-    
-    float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
-    finalDirectColor += (baseColor.rgba * 0.2f);
-    
-    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness);
-    float3 viewVector = CameraDirection(worldPosition);
-    float3 reflectVector = reflect(-viewVector, normal);
-    
-    float4 prefiltered = PrefilteredMap.SampleLevel(PBRSampler, reflectVector, roughness * MAX_MIP_LEVEL);
-    return prefiltered;
-
-}
-
-float4 PS_BRDF(PBRMeshOutput output) : SV_TARGET
-{
-    float3 lightDir = -GlobalLight.direction;
-    float4 lightColor = GlobalLight.diffuse;
-    float3 worldPosition = output.worldPosition;
-    float3 tangent = output.tangent;
-    float3 normal = output.normal;
-    
-    float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
-    ComputeNormalMapping(normal, tangent, output.uv);
-    
-    float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
-    float ao = metallicRoughness.a;
-    float metallic = metallicRoughness.b;
-    float roughness = metallicRoughness.g;
-    
-    float4 finalDirectColor = GetPBRDirect(worldPosition, normal, baseColor, metallic, roughness, lightDir, lightColor);
-    finalDirectColor += (baseColor.rgba * 0.2f);
-    
-    float3 IBL = GetIBL(worldPosition, normal, baseColor, metallic, roughness);
-    
-    float3 viewVector = CameraDirection(worldPosition);
-    float NdotV = max(dot(normal, viewVector), 0.0001f);
-    float4 envBRDF = BRDFLUT.Sample(PBRSampler, float2(NdotV, roughness));
-    return envBRDF;
-
+    return finalColor * shadow;
 }
 
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
-    PASS_VP(P1, VS, PS_DirectColor)
-    PASS_VP(P2, VS, PS_IBL)
-    PASS_VP(P3, VS, PS_Irradiance)
-    PASS_VP(P4, VS, PS_Prefiltered)
-    PASS_VP(P5, VS, PS_BRDF)
 };

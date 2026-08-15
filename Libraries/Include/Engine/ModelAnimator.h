@@ -26,7 +26,7 @@ public:
 
     void UpdateTweenData();
     void RenderInstancing(shared_ptr<class InstancingBuffer>& buffer);
-    void Render();
+    void Render(shared_ptr<Shader> customShader = nullptr);
     InstanceID GetInstanceID();
     TweenDesc& GetTweenDesc() { return _tweenDesc; }
 

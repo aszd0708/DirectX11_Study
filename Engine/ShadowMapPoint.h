@@ -18,6 +18,13 @@ public:
 	void Create(uint32 width, uint32 height) override;
 	void BindRTVAndDSV() override;
 
+	Matrix GetLightView(shared_ptr<Light> light, const int& index);
+	Matrix GetLightProj(shared_ptr<Light> light);
+	Matrix GetLightVP(shared_ptr<Light> light, int& index);
+
+	virtual void RenderShadowMap(shared_ptr<Light> light, shared_ptr<Shader> shader, vector<shared_ptr<GameObject>>& objects) override;
+	virtual ShadowDesc CreateShadowBuffer(shared_ptr<Light> light) override;
+
 private:
 	void CreateShaderMapTexture(float width, float height);
 	void CreateDepthStencilView();
@@ -27,7 +34,7 @@ public:
 	ComPtr<ID3D11DepthStencilView> GetDSV(int index) { return _dsvs[index]; }
 
 	// 디버깅용
-	ComPtr<ID3D11ShaderResourceView> GetLayerSRV(int index) { return _srvs[index]; }
+	ComPtr<ID3D11ShaderResourceView> GetLayerSRV(int index) override { return _srvs[index]; }
 
 private:
 	ComPtr<ID3D11DepthStencilView> _dsvs[MAX_TEXTURE_COUNT];

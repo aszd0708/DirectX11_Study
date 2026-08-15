@@ -96,3 +96,13 @@ using namespace Microsoft::WRL;
 
 // ImGUI
 #include "imgui.h"
+
+enum class eShaderPass : int
+{
+    Forward = 0,         // 0: 기본 렌더링 (불투명)
+    Forward_Mask = 1,    // 1: 기본 렌더링 (나뭇잎, 철조망 등 구멍 뚫린 것)
+    Forward_Blend = 2,   // 2: 반투명 렌더링 (유리, 물)
+
+    Shadow = 3,          // 3: 그림자용 깊이맵 렌더링 (불투명)
+    Shadow_Mask = 4,     // 4: 그림자용 깊이맵 렌더링 (알파 클리핑 필요)
+};

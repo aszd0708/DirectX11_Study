@@ -38,5 +38,7 @@ float4 PS(ShadowOutput input) : SV_TARGET
 technique11 T0
 {
     PASS_VP(P0, VS, PS) // 일반
-    PASS_VP(P1, VS_Instancing, PS) // 인스턴싱
+    PASS_VP(P2, VS, PS) // 인스턴싱
+    PASS_VP(P1, VS, PS) // 인스턴싱
+    PASS_VP(P3, VS, PS) // 인스턴싱
 };

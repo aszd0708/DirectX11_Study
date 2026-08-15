@@ -56,8 +56,8 @@ Texture2D AOMap;
 ////////////
 
 cbuffer ShadowBuffer
-{
-    Matrix LightVP;
+{ 
+    Matrix LightVP[3];
     float4 CascadeEnd;
     
     float2 LightProjValues; // x = _33, y = _43 
@@ -73,105 +73,39 @@ TextureCube ShadowMapCubePoint;
 //////////////
 
 // 
-float4 GetLightAttenuationAndLightDir(float3 worldPosition)
+float4 GetLightAttenuationAndLightDir(int type, float3 lightPos, float3 lightDir, float3 worldPosition)
 {
-    float3 lightDir = GlobalLight.direction;
     float attenuation = 1.0f; // 기본 강도 100
     
-    float3 toPixel = worldPosition - GlobalLight.position;
-    float dist = length(toPixel);
-    lightDir = toPixel / dist;
-    
-    // 거리가 Range에 가까워질수록 빛이 0에 수렴
-    attenuation = saturate(1.0f - (dist / GlobalLight.range));
-    
-    if (GlobalLight.type == LIGHT_TYPE_SPOT)
+    if (GlobalLight.type == LIGHT_TYPE_SPOT || GlobalLight.type == LIGHT_TYPE_POINT)
     {
-        float cosAngle = dot(GlobalLight.direction, lightDir);
-        
-        float spotRadian = radians(GlobalLight.angle);
-        float minCos = cos(spotRadian);
-        
-        if (cosAngle < minCos)
+        float3 toPixel = worldPosition - lightPos;
+        float dist = length(toPixel);
+        lightDir = toPixel / dist;
+    
+        if (GlobalLight.type == LIGHT_TYPE_SPOT)
         {
-            attenuation = 0.0f;
-        }
-        else
-        {
-            float maxCos = cos(radians(GlobalLight.angle * 0.9f));
-            attenuation *= smoothstep(minCos, maxCos, cosAngle);
+            // 거리가 Range에 가까워질수록 빛이 0에 수렴
+            attenuation = saturate(1.0f - (dist / GlobalLight.range));
+        
+            float cosAngle = dot(lightDir, lightDir);
+        
+            float spotRadian = radians(GlobalLight.angle);
+            float minCos = cos(spotRadian);
+        
+            if (cosAngle < minCos)
+            {
+                attenuation = 0.0f;
+            }
+            else
+            {
+                float maxCos = cos(radians(GlobalLight.angle * 0.9f));
+                attenuation *= smoothstep(minCos, maxCos, cosAngle);
+            }
         }
     }
     
     return float4(attenuation, lightDir);
-}
-
-float4 ComputeLight(float3 normal, float2 uv, float3 worldPosition)
-{
-    float4 ambientColor = 0;
-    float4 diffuseColor = 0;
-    float4 specularColor = 0;
-    float4 emissiveColor = 0;
-    
-    float attenuation = 1.0f;
-    float3 lightDir = GlobalLight.direction;
-    switch (GlobalLight.type)
-    {
-        case LIGHT_TYPE_POINT:
-        case LIGHT_TYPE_SPOT:
-            float4 values = GetLightAttenuationAndLightDir(worldPosition);
-            attenuation = values.r;
-            lightDir = values.gba;
-            break;
-    }
-    
-    /*
-
-    // Ambient
-    {
-        float4 color = GlobalLight.ambient * Material.ambient;
-        ambientColor = DiffuseMap.Sample(LinearSampler, uv) * color;
-    }
-    
-    // Diffuse
-    {
-        float4 color = DiffuseMap.Sample(LinearSampler, uv);    
-        float value = dot(-lightDir, normal);
-        diffuseColor = color * value * GlobalLight.diffuse * Material.diffuse;
-    }
-    
-    // Specular
-    {
-        float3 R = lightDir - (2 * normal * dot(lightDir, normal));
-        R = normalize(R);
-    
-        float3 cameraPosition = CameraPosition();
-        float3 E = normalize(cameraPosition - worldPosition);
-    
-        float value = saturate(dot(R, E));
-        float specular = pow(value, 10);
-    
-        specularColor = GlobalLight.specular * Material.specular * specular;
-    }
-    
-    // Emission
-    {
-        float3 cameraPosition = CameraPosition();
-        float3 E = normalize(cameraPosition - worldPosition);
-    
-        float value = saturate(dot(E, normal));
-        float emissive = 1.0f - value;
-    
-        // min, max, x
-        emissive = smoothstep(0.0f, 1.0f, emissive);
-        emissive = pow(emissive, 2);
-        emissiveColor = GlobalLight.emissive * Material.emissive * emissive;
-    }
-    
-    float4 finalColor = ambientColor + diffuseColor + specularColor + emissiveColor;
-    return finalColor * attenuation;
-*/
-    return (1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 void ComputeNormalMapping(inout float3 normal, float3 tangent, float2 uv)
@@ -203,7 +137,7 @@ SamplerComparisonState ComparisonSampler
     ComparisonFunc = LESS_EQUAL; // 내 깊이가 맵 깊이보다 작거나 같으면 통과
 };
 
-float CalculateShadow(float4 worldPos, int cascadeIndex, Matrix lightVP)
+float CalculateShadowDirectional(float4 worldPos, int cascadeIndex, Matrix lightVP)
 {
     float4 lightSpacePos = mul(worldPos, lightVP);
     float3 projCoords = lightSpacePos.xyz / lightSpacePos.w;
@@ -275,9 +209,8 @@ float CalculateShadowSpot(float4 worldPos, Matrix lightVP, float3 normal)
     return lerp(0.1f, 1.0f, shadowPercent);
 }
 
-float CalculateShadowPoint(float4 worldPos, Matrix lightVP, float3 normal)
+float CalculateShadowPoint(float4 worldPos, float3 normal)
 {
-    float4 lightSpacePos = mul(worldPos, lightVP);
     float3 lightDir = worldPos.xyz - GlobalLight.position;
     
     float dist = length(lightDir);
@@ -299,6 +232,39 @@ float CalculateShadowPoint(float4 worldPos, Matrix lightVP, float3 normal)
                      currentDepth - bias).r;
     
     return lerp(0.1f, 1.0f, shadowPercent);
+}
+
+float CalculateShadow(int type, float cameraDepth, float4 worldPos, float3 normal, Matrix lightVP[3])
+{
+    float shadow = 1.0f;
+    switch (type)
+    {
+        case LIGHT_TYPE_DIRECTIONAL:
+        {
+            int cascadeIndex = 0;
+            if (cameraDepth > CascadeEnd.y)
+                cascadeIndex = 2; // 60m보다 멀면 2번 맵
+            else if (cameraDepth > CascadeEnd.x)
+                cascadeIndex = 1; // 15m~60m 사이면 1번 맵
+            else
+                cascadeIndex = 0; // 15m 이내면 0번 맵
+            
+            shadow = CalculateShadowDirectional(worldPos, cascadeIndex, lightVP[cascadeIndex]);
+            break;
+        }
+        case LIGHT_TYPE_SPOT:
+        {
+            shadow = CalculateShadowSpot(worldPos, lightVP[0], normal);
+            break;
+        }
+        case LIGHT_TYPE_POINT:
+        {
+            shadow = CalculateShadowPoint(worldPos, normal);
+            break;
+        }
+    }
+    
+    return shadow;
 }
 
 #endif

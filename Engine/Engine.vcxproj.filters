@@ -270,6 +270,9 @@
     <ClInclude Include="IBLManager.h">
       <Filter>02. Managers</Filter>
     </ClInclude>
+    <ClInclude Include="Shadow.h">
+      <Filter>01. Graphics\Shadow</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -472,6 +475,9 @@
     </ClCompile>
     <ClCompile Include="IBLManager.cpp">
       <Filter>02. Managers</Filter>
+    </ClCompile>
+    <ClCompile Include="Shadow.cpp">
+      <Filter>01. Graphics\Shadow</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
