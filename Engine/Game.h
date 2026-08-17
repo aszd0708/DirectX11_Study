@@ -27,6 +27,7 @@ private:
 
 	void Update();
 	void ShowFPS();
+	void OnResize(int width, int height);
 
 	static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
 	

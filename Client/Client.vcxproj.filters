@@ -7,9 +7,6 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{ec1fc7a4-e083-4ffe-aa6f-9f1c2c16b5c4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Common">
-      <UniqueIdentifier>{7b89e9d5-e3a7-4f21-951b-b7b75cd87f31}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Main">
       <UniqueIdentifier>{917790be-525f-4fb7-b23e-ac28870b541b}</UniqueIdentifier>
     </Filter>
@@ -124,15 +121,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Shaders\00. Global.fx">
-      <Filter>Shaders\Common</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Shaders\00. Light.fx">
-      <Filter>Shaders\Common</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Shaders\00. Render.fx">
-      <Filter>Shaders\Common</Filter>
-    </FxCompile>
     <FxCompile Include="..\Shaders\SSAODemo.fx">
       <Filter>Shaders\Demo</Filter>
     </FxCompile>
@@ -141,9 +129,6 @@
     </FxCompile>
     <FxCompile Include="..\Shaders\PBRMeshDemo.fx">
       <Filter>Shaders\Demo\PBR</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Shaders\00. PBR.fx">
-      <Filter>Shaders\Common</Filter>
     </FxCompile>
     <FxCompile Include="..\Shaders\PBRModelDemo.fx">
       <Filter>Shaders\Demo\PBR</Filter>

@@ -51,10 +51,6 @@
     <ClCompile Include="Terrain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Shaders\00. Global.fx" />
-    <FxCompile Include="..\Shaders\00. Light.fx" />
-    <FxCompile Include="..\Shaders\00. PBR.fx" />
-    <FxCompile Include="..\Shaders\00. Render.fx" />
     <FxCompile Include="..\Shaders\PBRMeshDemo.fx" />
     <FxCompile Include="..\Shaders\PBRModelDemo.fx" />
     <FxCompile Include="..\Shaders\PBRTerrain.fx" />

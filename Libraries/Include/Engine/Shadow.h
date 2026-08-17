@@ -12,6 +12,8 @@ public:
 	void Render(shared_ptr<Light> light, vector<shared_ptr<GameObject>>& objects);
 	void CreateShadowBuffer(shared_ptr<Light> light);
 
+	void ApplyShadow(shared_ptr<Shader> shader, LightDesc::eLightType type);
+
 public:
 	shared_ptr<Shader> GetShader() { return _shader; }
 	shared_ptr<ShadowMapBase> GetShadowMap() {return _shadowMap; }

@@ -70,7 +70,7 @@ BOOL Game::InitInstance(int cmdShow)
 	::AdjustWindowRect(&windowRect, WS_OVERLAPPEDWINDOW, false);
 
 	_desc.hWnd = CreateWindowW(_desc.appName.c_str(), _desc.appName.c_str(), WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, nullptr, nullptr, _desc.hInstance, nullptr);
+		CW_USEDEFAULT, 0, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top, nullptr, nullptr, _desc.hInstance, this);
 
 	if (!_desc.hWnd)
 		return FALSE;
@@ -97,9 +97,12 @@ LRESULT CALLBACK Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM 
 			GetClientRect(handle, &rect);
 			int width = rect.right;
 			int height = rect.bottom;
-			GRAPHICS->OnResize(width, height);
 
-			SCENE->OnResize(width, height);
+			Game* pGame = (Game*)GetWindowLongPtr(handle, GWLP_USERDATA);
+			if (pGame)
+			{
+				pGame->OnResize(width, height);
+			}
 		}
 		break;
 	}
@@ -110,15 +113,30 @@ LRESULT CALLBACK Game::WndProc(HWND handle, UINT message, WPARAM wParam, LPARAM 
 		GetClientRect(handle, &rect);
 		int width = rect.right;
 		int height = rect.bottom;
-		GRAPHICS->OnResize(width, height);
-
-		SCENE->OnResize(width, height);
+		Game* pGame = (Game*)GetWindowLongPtr(handle, GWLP_USERDATA);
+		if (pGame)
+		{
+			pGame->OnResize(width, height);
+		}
 		break;
 	}
 	case WM_CLOSE:
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+
+	case WM_NCCREATE:
+	{
+		// 1. 윈도우 생성될 때 this 포인터를 가져와서 주머니에 저장! (2단계)
+		CREATESTRUCT* pCreate = (CREATESTRUCT*)lParam;
+		Game* pGame = (Game*)(pCreate->lpCreateParams);
+		SetWindowLongPtr(handle, GWLP_USERDATA, (LONG_PTR)pGame);
+
+		// 2. 처리가 끝났으니 기본 동작을 이어가도록 리턴
+		return ::DefWindowProc(handle, message, wParam, lParam);
+		break;
+	}
+
 	default:
 		return ::DefWindowProc(handle, message, wParam, lParam);
 	}
@@ -155,3 +173,12 @@ void Game::ShowFPS()
 	::SetWindowText(_desc.hWnd, text);
 }
 
+
+void Game::OnResize(int width, int height)
+{
+	GRAPHICS->OnResize(width, height);
+
+	SCENE->OnResize(width, height);
+
+	_desc.app->OnResize(width, height);
+}

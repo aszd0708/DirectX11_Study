@@ -11,6 +11,14 @@ struct GlobalDesc
 	Matrix VInv = Matrix::Identity;
 };
 
+struct ScreenSizeDesc
+{
+	int width;
+	int height;
+
+	Vec2 padding;
+};
+
 struct TransformDesc
 {
 	Matrix W = Matrix::Identity;

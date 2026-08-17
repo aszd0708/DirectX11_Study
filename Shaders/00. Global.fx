@@ -3,6 +3,8 @@
 
 #define DEBUG_VALUE(value) float4(value, value, value, 1.0f)
 
+#define PI 3.14159265359
+
 /////////////////
 // ConstBuffer //
 /////////////////
@@ -18,6 +20,19 @@ cbuffer GlobalBuffer
 cbuffer TransformBuffer
 {
     matrix W;
+};
+
+struct sScreenSize
+{
+    int width;
+    int height;
+    
+    float2 padding;
+};
+
+cbuffer ScreenSizeBuffer
+{
+    sScreenSize ScreenSize;
 };
 
 //////////////////

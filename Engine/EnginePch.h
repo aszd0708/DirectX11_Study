@@ -105,4 +105,6 @@ enum class eShaderPass : int
 
     Shadow = 3,          // 3: 그림자용 깊이맵 렌더링 (불투명)
     Shadow_Mask = 4,     // 4: 그림자용 깊이맵 렌더링 (알파 클리핑 필요)
+
+    NormalDepthAO = 5,   // 5: AO 노멀 깊이맵
 };

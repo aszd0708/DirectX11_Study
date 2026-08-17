@@ -1,6 +1,7 @@
 #include "00. Global.fx"
 #include "00. Light.fx"
 #include "00. PBR.fx"
+#include "00. PostProccess.fx"
 
 struct VS_IN
 {

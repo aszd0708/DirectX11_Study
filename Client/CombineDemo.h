@@ -5,6 +5,7 @@
 class Shadow;
 
 class EnvironmentController;
+class GTAOController;
 
 class CombineDemo : public IExecute
 {
@@ -14,8 +15,10 @@ public:
 	void Init() override;
 	void Update() override;
 	void Render() override;
+	void OnResize(int width, int height) override;
 
 private:
+	void RenderAO();
 	void RenderShadow();
 	void RenderObjects();
 
@@ -26,6 +29,7 @@ private:
 	void CreateTerrain();
 
 private:
+	void DebugAO();
 	void DebugSkyCube();
 	void DebugShadow();
 
@@ -40,6 +44,7 @@ private:
 	shared_ptr<GameObject> _skyObj;
 
 	vector<shared_ptr<GameObject>> _modelObjs;
+	vector<shared_ptr<GameObject>> _aoApplyObjs;
 
 	int _intLightType = 0;
 	float _lightRange = 50.0f;
@@ -56,5 +61,8 @@ private:
 	float _blend = 0.0f;
 	vector<float> _skyCubeIbl;
 	vector<float> _skyCubeLight;
+
+private:
+	shared_ptr<GTAOController> _gtao;
 };
 

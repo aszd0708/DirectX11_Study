@@ -39,6 +39,26 @@ void Shadow::CreateShadowBuffer(shared_ptr<Light> light)
 	_shadowBuffer->CopyData(desc);
 }
 
+void Shadow::ApplyShadow(shared_ptr<Shader> shader, LightDesc::eLightType type)
+{
+	string shadowResourceKey;
+	switch (type)
+	{
+	case (int)LightDesc::eLightType::Directional:
+		shadowResourceKey = "ShadowMapArray";
+		break;
+	case (int)LightDesc::eLightType::Spot:
+		shadowResourceKey = "ShadowMapSpot";
+		break;
+	case (int)LightDesc::eLightType::Point:
+		shadowResourceKey = "ShadowMapCubePoint";
+		break;
+	}
+
+	shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(GetShadowBuffer()->GetComPtr().Get());
+	shader->GetSRV(shadowResourceKey)->SetResource(GetShadowMap()->GetSRV().Get());
+}
+
 ComPtr<ID3D11ShaderResourceView> Shadow::GetLayerSRV(int index)
 {
 	return _shadowMap->GetLayerSRV(index);

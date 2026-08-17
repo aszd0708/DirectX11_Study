@@ -12,6 +12,9 @@
 #include "CameraScript.h"
 #include "Light.h"
 #include "Shadow.h"
+#include "AOBase.h"
+#include "GTAOController.h"
+#include "RenderTarget.h"
 
 void CombineDemo::Init()
 {
@@ -69,6 +72,11 @@ void CombineDemo::Init()
 		_shadow = make_shared<Shadow>((LightDesc::eLightType)lightDesc.type, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
 	}
 
+	// PostProccess
+	{
+		_gtao = make_shared<GTAOController>(GAME->GetGameDesc().width, GAME->GetGameDesc().height);
+	}
+
 	CreateSkyCube();
 	CreateTerrain();
 	CreateModel();
@@ -81,14 +89,34 @@ void CombineDemo::Update()
 		ImGui::SliderFloat("SkyBox", &_blend, 0, _skyCubeController->GetEnvCount() + 1);
 		_skyCubeController->SetBlendValue(_blend);
 	}
+
+	{
+		ImGui::SliderInt("Model Pass", &_modelPass, 0, 1);
+	}
+	DebugAO();
 	DebugSkyCube();
 	DebugShadow();
 }
 
 void CombineDemo::Render()
 {
+	RenderAO();
 	RenderShadow();
 	RenderObjects();
+}
+
+void CombineDemo::OnResize(int width, int height)
+{
+	if(_gtao == nullptr) return;
+
+	_gtao->OnResize(width, height);
+}
+
+void CombineDemo::RenderAO()
+{
+	_gtao->RenderAO(_aoApplyObjs);
+	_gtao->RenderBilateralBlur();
+	_gtao->Render();
 }
 
 void CombineDemo::RenderShadow()
@@ -106,28 +134,15 @@ void CombineDemo::RenderObjects()
 
 	LightDesc desc = CUR_SCENE->GetLight()->GetLight()->GetLightDesc();
 
-	string shadowResourceKey = "";
-	switch (desc.type)
-	{
-	case (int)LightDesc::eLightType::Directional:
-		shadowResourceKey = "ShadowMapArray";
-		break;
-	case (int)LightDesc::eLightType::Spot:
-		shadowResourceKey = "ShadowMapSpot";
-		break;
-	case (int)LightDesc::eLightType::Point:
-		shadowResourceKey = "ShadowMapCubePoint";
-		break;
-	}
-
 	for (int i = 0; i < _modelObjs.size(); ++i)
 	{
 		shared_ptr<GameObject> obj = _modelObjs[i];
 		shared_ptr<ModelRenderer> renderer = obj->GetModelRenderer();
 
 		shared_ptr<Shader> shader = renderer->GetShader();
-		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
-		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
+
+		_shadow->ApplyShadow(shader, (LightDesc::eLightType)desc.type);
+		_gtao->ApplyAO(shader);
 
 		_skyCubeController->BlendIBL(renderer->GetShader());
 
@@ -139,10 +154,11 @@ void CombineDemo::RenderObjects()
 		shared_ptr<MeshRenderer> renderer = _terrain->GetMeshRenderer();
 
 		shared_ptr<Shader> shader = renderer->GetShader();
-		shader->GetConstantBuffer("ShadowBuffer")->SetConstantBuffer(_shadow->GetShadowBuffer()->GetComPtr().Get());
-		shader->GetSRV(shadowResourceKey)->SetResource(_shadow->GetShadowMap()->GetSRV().Get());
+		_shadow->ApplyShadow(shader, (LightDesc::eLightType)desc.type);
+		_gtao->ApplyAO(shader);
 
 		_skyCubeController->BlendIBL(renderer->GetShader());
+		renderer->SetPass(_modelPass);
 		renderer->Render();
 	}
 	CUR_SCENE->GetLight()->GetMeshRenderer()->Render();
@@ -171,6 +187,7 @@ void CombineDemo::CreateModel()
 		_droidObj->GetOrAddTransform()->SetRotation(Vec3(1.5f, 0.0f, 0.0f));
 		_droidObj->GetOrAddTransform()->SetPosition(Vec3(20.0f, 6.0f, 30.0f));
 		_modelObjs.emplace_back(_droidObj);
+		_aoApplyObjs.emplace_back(_droidObj);
 	}
 	{
 		shared_ptr<ModelRenderer> modelRenderer = make_shared<ModelRenderer>(shader);
@@ -189,6 +206,7 @@ void CombineDemo::CreateModel()
 		_towerObj->GetOrAddTransform()->SetPosition(Vec3(30.0f, 9.0f, 20.0f));
 		_towerObj->GetOrAddTransform()->SetScale(Vec3(2.0f, 2.0f, 2.0f));
 		_modelObjs.emplace_back(_towerObj);
+		_aoApplyObjs.emplace_back(_towerObj);
 	}
 	{
 		shared_ptr<ModelRenderer> modelRenderer = make_shared<ModelRenderer>(shader);
@@ -209,6 +227,7 @@ void CombineDemo::CreateModel()
 		_helmetObj->GetOrAddTransform()->SetRotation(Vec3(1.5f, 0.0f, 0.0f));
 		_helmetObj->GetOrAddTransform()->SetScale(Vec3(2.0f, 2.0f, 2.0f));
 		_modelObjs.emplace_back(_helmetObj);
+		_aoApplyObjs.emplace_back(_helmetObj);
 	}
 }
 
@@ -290,6 +309,17 @@ void CombineDemo::CreateTerrain()
 	renderer->SetMesh(mesh);
 	_terrain->AddComponent(renderer);
 	_terrain->GetOrAddTransform();
+	_aoApplyObjs.emplace_back(_terrain);
+}
+
+void CombineDemo::DebugAO()
+{
+	ImGui::Begin("AO Debugger");
+	ImGui::Image((void*)_gtao->GetDepthRenderTarget()->GetShaderResourceView().Get(), ImVec2(128, 128));
+	ImGui::SameLine();
+	ImGui::Image((void*)_gtao->GetAORenderTarget()->GetShaderResourceView().Get(), ImVec2(128, 128));
+	ImGui::SameLine();
+	ImGui::End();
 }
 
 void CombineDemo::DebugSkyCube()

@@ -165,6 +165,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AABBBoxCollider.h" />
+    <ClInclude Include="AOBase.h" />
     <ClInclude Include="BaseCollider.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Component.h" />
@@ -180,6 +181,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClInclude Include="Geometry.h" />
     <ClInclude Include="GeometryHelper.h" />
     <ClInclude Include="Graphics.h" />
+    <ClInclude Include="GTAOController.h" />
     <ClInclude Include="IBLManager.h" />
     <ClInclude Include="IExecute.h" />
     <ClInclude Include="imconfig.h" />
@@ -240,6 +242,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AABBBoxCollider.cpp" />
+    <ClCompile Include="AOBase.cpp" />
     <ClCompile Include="BaseCollider.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -253,6 +256,7 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
     <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="GeometryHelper.cpp" />
     <ClCompile Include="Graphics.cpp" />
+    <ClCompile Include="GTAOController.cpp" />
     <ClCompile Include="IBLManager.cpp" />
     <ClCompile Include="IExecute.cpp" />
     <ClCompile Include="imgui.cpp">
@@ -350,6 +354,31 @@ xcopy /Y "$(SolutionDir)Engine\*.inl" "$(SolutionDir)Libraries\Include\Engine"</
       <FileType>Document</FileType>
     </None>
     <None Include="..\Shaders\Irradiance.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Shaders\00. Global.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\Shaders\00. Light.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\Shaders\00. PBR.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\Shaders\00. Render.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\Shaders\AOBase.fx">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\Shaders\GTAO.fx">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Shaders\00. PostProccess.fx">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

@@ -55,6 +55,18 @@
     <Filter Include="99. Shaders">
       <UniqueIdentifier>{dbf2d8dd-4c95-4f56-a03d-151b3aabf516}</UniqueIdentifier>
     </Filter>
+    <Filter Include="01. Graphics\PostProccessing">
+      <UniqueIdentifier>{2f23ac96-c8f2-4b87-adc4-ba68e010a261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="01. Graphics\PostProccessing\AO">
+      <UniqueIdentifier>{094ffa96-f82a-4a14-bf62-94c6fcefd923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99. Shaders\AO">
+      <UniqueIdentifier>{cd1ce304-5498-4059-99b1-75542c3b7e99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="99. Shaders\Common">
+      <UniqueIdentifier>{92ee152a-b263-416b-8d91-7151af634ae8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -276,6 +288,12 @@
     <ClInclude Include="EnvironmentController.h">
       <Filter>01. Graphics\Environment</Filter>
     </ClInclude>
+    <ClInclude Include="GTAOController.h">
+      <Filter>01. Graphics\PostProccessing\AO</Filter>
+    </ClInclude>
+    <ClInclude Include="AOBase.h">
+      <Filter>01. Graphics\PostProccessing\AO</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -485,6 +503,12 @@
     <ClCompile Include="EnvironmentController.cpp">
       <Filter>01. Graphics\Environment</Filter>
     </ClCompile>
+    <ClCompile Include="GTAOController.cpp">
+      <Filter>01. Graphics\PostProccessing\AO</Filter>
+    </ClCompile>
+    <ClCompile Include="AOBase.cpp">
+      <Filter>01. Graphics\PostProccessing\AO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="SimpleMath.inl">
@@ -504,6 +528,27 @@
     </None>
     <None Include="..\Shaders\Irradiance.fx">
       <Filter>99. Shaders</Filter>
+    </None>
+    <None Include="..\Shaders\GTAO.fx">
+      <Filter>99. Shaders\AO</Filter>
+    </None>
+    <None Include="..\Shaders\AOBase.fx">
+      <Filter>99. Shaders\AO</Filter>
+    </None>
+    <None Include="..\Shaders\00. Global.fx">
+      <Filter>99. Shaders\Common</Filter>
+    </None>
+    <None Include="..\Shaders\00. Light.fx">
+      <Filter>99. Shaders\Common</Filter>
+    </None>
+    <None Include="..\Shaders\00. PBR.fx">
+      <Filter>99. Shaders\Common</Filter>
+    </None>
+    <None Include="..\Shaders\00. Render.fx">
+      <Filter>99. Shaders\Common</Filter>
+    </None>
+    <None Include="..\Shaders\00. PostProccess.fx">
+      <Filter>99. Shaders\Common</Filter>
     </None>
   </ItemGroup>
 </Project>

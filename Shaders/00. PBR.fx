@@ -30,8 +30,6 @@ cbuffer SkyCubeLerpBuffer
 {
     sSkyCubeBlendFactor SkyCubeBlendFactorDesc;
 };
-
-#define PI 3.14159265359
 #define MAX_MIP_LEVEL 5
 const float3 NON_METAL_F0 = float3(0.04, 0.04, 0.04);
 

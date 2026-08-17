@@ -7,9 +7,9 @@ public:
 
 public:
 	void ClearRenderTargetView();
+	void CreateRenderTarget(float width, float height);
 
 private:
-	void CreateRenderTarget(float width, float height);
 	void CreateRenderTargetView();
 	void CreateShaderResourceView();
 

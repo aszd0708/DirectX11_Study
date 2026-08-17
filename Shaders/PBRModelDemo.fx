@@ -1,6 +1,7 @@
 #include "00. Global.fx"
 #include "00. Light.fx"
 #include "00. PBR.fx"
+#include "00. PostProccess.fx"
 
 #define MAX_MODEL_TRANSFORM 250
 #define MAX_MODEL_KEYFRAME 500
@@ -173,6 +174,10 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
     
     float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness, SkyCubeBlendFactorDesc.LerpValue) * ao * IntensityDesc.IBLIntensity;
     
+    float2 screenUV = output.position.xy / float2(AOSize.width, AOSize.height);
+    float aoValue = GetAOValue(screenUV);
+    IBL *= aoValue;
+    
     float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
     
     finalColor.rgb = ACESFilm(finalColor.rgb);
@@ -181,7 +186,15 @@ float4 PS(PBRMeshOutput output) : SV_TARGET
     return finalColor;
 }
 
+float4 PS_AO(PBRMeshOutput output) : SV_TARGET
+{
+    float2 screenUV = output.position.xy / float2(AOSize.width, AOSize.height);
+    float aoValue = GetAOValue(screenUV);
+    return float4(aoValue, aoValue, aoValue, 1.0f);
+}
+
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
+    PASS_VP(P1, VS, PS_AO)
 };
