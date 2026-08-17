@@ -68,7 +68,7 @@ float2 ReconstructViewPos(float2 uv, float depth)
 
 float3 ReconstructViewSpacePosition(float2 uv, float linearDepth, float projX, float proY)
 {
-    float z = linearDepth * (1000.0f - 0.1f) * 0.1f;
+    float z = linearDepth * (1000.0f - 0.1f) + 0.1f;
     
     float x = uv.x * 2.0f - 1.0f;
     float y = (1.0f - uv.y) * 2.0f - 1.0f;

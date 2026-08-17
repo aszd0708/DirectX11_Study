@@ -22,6 +22,7 @@ public:
 
 	void RenderBilateralBlur() override;
 	
+	GTAODesc& GetDesc() { return _desc; }
 
 protected:
 	void Init() override;

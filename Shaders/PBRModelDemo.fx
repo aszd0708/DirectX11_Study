@@ -193,8 +193,61 @@ float4 PS_AO(PBRMeshOutput output) : SV_TARGET
     return float4(aoValue, aoValue, aoValue, 1.0f);
 }
 
+float4 PS_WithoutAO(PBRMeshOutput output) : SV_TARGET
+{
+    if (Material.flipUV == 1)
+    {
+        output.uv.y = 1.0f - output.uv.y;
+    }
+    
+    float4 lightColor = GlobalLight.diffuse;
+    float4 worldPosition = output.worldPosition;
+    float3 lightDir = GlobalLight.direction;
+    float3 tangent = output.tangent;
+    float3 normal = output.normal;
+    
+    float4 lightInfo = GetLightAttenuationAndLightDir(GlobalLight.type, GlobalLight.position, lightDir, worldPosition.xyz);
+    lightDir = -lightInfo.gba;
+    
+    float4 baseColor = BaseColorMap.Sample(LinearSampler, output.uv);
+    baseColor.rgb = pow(baseColor.rgb, 2.2f);
+    ComputeNormalMapping(normal, tangent, output.uv);
+    
+    float ao = 1.0f;
+    float metallic = 0.0f;
+    float roughness = 0.0f;
+    if (Material.UseSeparateMetallicRoughness == 1)
+    {
+        //ao = MetallicMap.Sample(LinearSampler, output.uv).r;
+        metallic = MetallicMap.Sample(LinearSampler, output.uv).r;
+        roughness = RoughnessMap.Sample(LinearSampler, output.uv).r;
+    }
+    else
+    {
+        float4 metallicRoughness = MetallicRoughnessMap.Sample(LinearSampler, output.uv);
+        ao = metallicRoughness.r;
+        roughness = metallicRoughness.g;
+        metallic = metallicRoughness.b;
+    }
+    
+    float cameraDepth = output.position.w;
+    
+    float shadow = CalculateShadow(GlobalLight.type, cameraDepth, worldPosition, normal, LightVP);
+    float4 finalDirectColor = GetPBRDirect(worldPosition.xyz, normal, baseColor, metallic, roughness, lightDir, lightColor) * lightInfo.r * IntensityDesc.LightIntensity * shadow;
+    
+    float3 IBL = GetIBL(worldPosition.xyz, normal, baseColor, metallic, roughness, SkyCubeBlendFactorDesc.LerpValue) * ao * IntensityDesc.IBLIntensity;
+    
+    float4 finalColor = (finalDirectColor + float4(IBL, 1.0f));
+    
+    finalColor.rgb = ACESFilm(finalColor.rgb);
+    finalColor.rgb = pow(finalColor.rgb, 1.0f / 2.2f);
+    
+    return finalColor;
+}
+
 technique11 T0
 {
     PASS_VP(P0, VS, PS)
     PASS_VP(P1, VS, PS_AO)
+    PASS_VP(P3, VS, PS_WithoutAO)
 };

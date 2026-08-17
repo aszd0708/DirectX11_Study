@@ -189,6 +189,7 @@ float CalculateShadowSpot(float4 worldPos, Matrix lightVP, float3 normal)
     float currentDepth = projCoords.z;
     float3 lightDir = worldPos.xyz - GlobalLight.position;
     float ndotl = saturate(dot(normalize(normal), -normalize(lightDir)));
+
     float bias = max(0.002f * (1.0f - ndotl), 0.0005f);
     float shadowPercent = 0.0f;
     float2 texelSize = 1.0f / 4096.0f;

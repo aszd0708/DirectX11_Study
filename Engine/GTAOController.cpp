@@ -24,7 +24,7 @@ void GTAOController::RenderBilateralBlur()
 void GTAOController::Init()
 {
 	_desc.radius = 1.0f;
-	_desc.maxPixelRadius = 300;
+	_desc.maxPixelRadius = 300.0f;
 	_desc.thickness = 1.0f;
 	_desc.sliceCount = 2;
 	_desc.stepCount = 4;

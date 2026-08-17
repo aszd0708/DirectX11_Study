@@ -47,7 +47,7 @@ Matrix ShadowMapSpot::GetLightView(shared_ptr<Light> light)
 Matrix ShadowMapSpot::GetLightProj(shared_ptr<Light> light)
 {
 	LightDesc desc = light->GetLightDesc();
-	float angle = desc.angle;
+	float angle = desc.angle * 2;
 	float range = desc.range;
 	float fovY = ::XMConvertToRadians(XMMin(XMMax(angle, 1.0f), 170.0f));
 	return ::XMMatrixPerspectiveFovLH(fovY, 1.0f, 1.0f, range);
@@ -90,7 +90,6 @@ void ShadowMapSpot::CreateShaderMapTexture(float width, float height)
 	D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(D3D11_TEXTURE2D_DESC));
 
-	desc.Width = width;
 	desc.Width = width;
 	desc.Height = height;
 	desc.MipLevels = 1;

@@ -76,7 +76,7 @@ float GetOcclusion(float3 viewSpacePos, float3 normal, float2 uv)
         float finalFrontAngle = acos(clamp(frontMaxCos, -1.0f, 1.0f));
         float finalBackAngle = acos(clamp(backMaxCos, -1.0f, 1.0f));
         
-        float3 sliceDir = float3(sin(angle), cos(angle), 0.0f);
+        float3 sliceDir = float3(sin(angle), -cos(angle), 0.0f);
         float NdotS = dot(normal, sliceDir);
         float NdotV = dot(normal, viewDir);
         

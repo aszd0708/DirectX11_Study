@@ -91,7 +91,7 @@ void CombineDemo::Update()
 	}
 
 	{
-		ImGui::SliderInt("Model Pass", &_modelPass, 0, 1);
+		ImGui::SliderInt("Model Pass", &_modelPass, 0, 2);
 	}
 	DebugAO();
 	DebugSkyCube();
@@ -318,7 +318,34 @@ void CombineDemo::DebugAO()
 	ImGui::Image((void*)_gtao->GetDepthRenderTarget()->GetShaderResourceView().Get(), ImVec2(128, 128));
 	ImGui::SameLine();
 	ImGui::Image((void*)_gtao->GetAORenderTarget()->GetShaderResourceView().Get(), ImVec2(128, 128));
-	ImGui::SameLine();
+
+
+	{
+		if (ImGui::SliderFloat("Radius", (float*)(&_gtao->GetDesc().radius), 0.01f, 5.0f))
+		{
+
+		}
+
+		if (ImGui::SliderInt("MaxPixelRadius", (int*)(&_gtao->GetDesc().maxPixelRadius), 1, 720.0f))
+		{
+
+		}
+
+		if (ImGui::SliderFloat("Thickness", (float*)(&_gtao->GetDesc().thickness), 1, 100.0f))
+		{
+
+		}
+
+		if (ImGui::SliderInt("SliceCount", (int*)(&_gtao->GetDesc().sliceCount), 1, 10))
+		{
+
+		}
+
+		if (ImGui::SliderInt("StepCount", (int*)(&_gtao->GetDesc().stepCount), 1, 10))
+		{
+			
+		}
+	}
 	ImGui::End();
 }
 
